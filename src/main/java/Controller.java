@@ -1,25 +1,33 @@
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.media.Media;
+import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
-import java.awt.*;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+
 
 public class Controller {
 
     private MediaPlayer player;
 
-    private Media selected;
-
-
+    private Track selected;
+    private Track currentlyPlaying;
+    @FXML
+    Label time;
     @FXML
     public ListView<String> list;
     @FXML
@@ -33,10 +41,88 @@ public class Controller {
     private ArrayList<Track> loaded = null;
 
     @FXML
+    public Slider songSlider;
+    private void updateSliderValue()
+    {
+        songSlider.setMax(currentlyPlaying.getMedia().getDuration().toSeconds());
+        songSlider.setMin(0);
+        songSlider.adjustValue(player.getCurrentTime().toSeconds());
+        time.setText(Double.toString(player.getCurrentTime().toSeconds()));
+    }
+
+    private void onFirstTimePlay() {
+        player.currentTimeProperty().addListener(new ChangeListener<Duration>() {
+
+            @Override
+            public void changed(ObservableValue observable, Duration oldValue, Duration newValue) {
+                updateSliderValue();
+
+            }
+
+        });
+    }
+    @FXML
     protected void initialize()
     {
         loaded = new ArrayList<Track>();
 
+
+        songSlider.valueProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable ov) {
+                if (songSlider.isValueChanging())
+                {
+                    player.seek(currentlyPlaying.getMedia().getDuration().multiply(songSlider.getValue() / 100.0));
+                }
+                updateSliderValue();
+                }
+            });
+
+
+
+        list.setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event) {
+                String selectedItem = list.getSelectionModel().getSelectedItem();
+                if(event.getClickCount() == 2)
+                {
+                    if (player == null)
+                    {
+                        for(Track load : loaded)
+                        {
+                            if (load.getSource().getName().equals(selectedItem)) {
+                                play(load);
+                            }
+                        }
+                    }
+
+                    assert player != null;
+                    if (player.getStatus().equals(MediaPlayer.Status.PLAYING))
+                    {
+                        player.stop();
+                    }
+                    for(Track load : loaded)
+                    {
+                        if (load.getSource().getName().equals(selectedItem)) {
+                            play(load);
+                        }
+
+                    }
+                }else if (event.getClickCount() == 1)
+                {
+                    for(Track load : loaded)
+                    {
+                        if (load.getSource().getName().equals(selectedItem)) {
+                            selected = load;
+                        }
+
+                    }
+
+                }
+
+            }
+        });
     }
 
 
@@ -48,54 +134,61 @@ public class Controller {
         FileChooser.ExtensionFilter wavFilter = new FileChooser.ExtensionFilter("Wav (*.wav)", "*.wav");
         browser.getExtensionFilters().add(wavFilter);
         browser.getExtensionFilters().add(mp3Filter);
-        File selected = browser.showOpenDialog(browseBtn.getScene().getWindow());
 
-        if (selected != null)
+        List<File> selections = browser.showOpenMultipleDialog(browseBtn.getScene().getWindow());
+        if (selections.size() > 0)
         {
-            Track selectedTrack = new Track(selected);
-            ObservableList<String> items = list.getItems();
-            items.add(selectedTrack.getSource().getName());
-            list.setItems(items);
-            loaded.add(selectedTrack);
-        }else
-        {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Missing file");
-            alert.setHeaderText(null);
-            alert.setContentText("File isn't valid!");
-            alert.showAndWait();
+            for(File selected : selections)
+            {
+                Track selectedTrack = new Track(selected);
+                ObservableList<String> items = list.getItems();
+                items.add(selectedTrack.getSource().getName());
+                list.setItems(items);
+                loaded.add(selectedTrack);
+            }
         }
 
     }
 
-    public void play(Media media)
+    public void play(Track track)
     {
+        playBtn.setVisible(false);
+        pauseBtn.setVisible(true);
+        pauseBtn.requestFocus();
         if (player == null)
         {
-            player = new MediaPlayer(media);
-            selected = media;
+            player = new MediaPlayer(track.getMedia());
+            onFirstTimePlay();
+            selected = track;
+            currentlyPlaying = selected;
             player.play();
 
         }else
         {
             if (player.getStatus().equals(MediaPlayer.Status.PLAYING))
             {
-                if (!media.equals(selected))
+                if (!track.equals(currentlyPlaying))
                 {
-                    player = new MediaPlayer(media);
-                    selected = media;
+                    player = new MediaPlayer(track.getMedia());
+                    selected = track;
+                    currentlyPlaying = selected;
                     player.play();
+                }else
+                {
+                    player.seek(Duration.ZERO);
                 }
             }
             if (player.getStatus().equals(MediaPlayer.Status.PAUSED))
             {
-                if (!media.equals(selected))
+                if (!track.equals(currentlyPlaying))
                 {
-                    player = new MediaPlayer(media);
-                    selected = media;
+                    player = new MediaPlayer(track.getMedia());
+                    selected = track;
+                    currentlyPlaying = selected;
                     player.play();
                 }else
                 {
+                    currentlyPlaying = selected;
                     player.play();
                 }
             }
@@ -105,19 +198,10 @@ public class Controller {
     }
 
     public void playClick(ActionEvent actionEvent) {
-        String selected = list.getSelectionModel().getSelectedItem();
+
         if (selected != null)
         {
-        playBtn.setVisible(false);
-        pauseBtn.setVisible(true);
-
-            for(Track load : loaded)
-            {
-                if (load.getSource().getName().equals(selected)) {
-                    play(load.getMedia());
-                }
-
-            }
+            play(selected);
         }
 
     }
@@ -125,6 +209,7 @@ public class Controller {
     public void pauseClick(ActionEvent actionEvent) {
         playBtn.setVisible(true);
         pauseBtn.setVisible(false);
+        playBtn.requestFocus();
         player.pause();
 
     }
