@@ -9,6 +9,7 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
    <children>
+      <Button fx:id="pauseBtn" layoutX="94.0" layoutY="326.0" mnemonicParsing="false" onAction="#pauseClick" prefHeight="60.0" prefWidth="72.0" text="Pause" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
       <ListView fx:id="list" layoutX="299.0" layoutY="40.0" prefHeight="248.0" prefWidth="284.0" />
       <Label layoutX="300.0" layoutY="15.0" text="Tracks:">
          <font>

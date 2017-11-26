@@ -15,26 +15,33 @@ import java.util.ArrayList;
 
 public class Controller {
 
+    private MediaPlayer player;
+
+    private Media selected;
+
+
     @FXML
     public ListView<String> list;
     @FXML
     public Button browseBtn;
     @FXML
-    public FileChooser browser;
+    private FileChooser browser;
     @FXML
     public Button playBtn;
-
-    private ArrayList<File> loaded = null;
+    @FXML
+    public Button pauseBtn;
+    private ArrayList<Track> loaded = null;
 
     @FXML
     protected void initialize()
     {
-        loaded = new ArrayList<File>();
+        loaded = new ArrayList<Track>();
 
     }
 
 
     public void browseClick(javafx.event.ActionEvent actionEvent) {
+
         browser = new FileChooser();
         browser.setTitle("Select file...");
         FileChooser.ExtensionFilter mp3Filter = new FileChooser.ExtensionFilter("MP3 (*.mp3)", "*.mp3");
@@ -42,12 +49,14 @@ public class Controller {
         browser.getExtensionFilters().add(wavFilter);
         browser.getExtensionFilters().add(mp3Filter);
         File selected = browser.showOpenDialog(browseBtn.getScene().getWindow());
+
         if (selected != null)
         {
+            Track selectedTrack = new Track(selected);
             ObservableList<String> items = list.getItems();
-            items.add(selected.getName());
+            items.add(selectedTrack.getSource().getName());
             list.setItems(items);
-            loaded.add(selected);
+            loaded.add(selectedTrack);
         }else
         {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -59,11 +68,38 @@ public class Controller {
 
     }
 
-    public void play(File media)
+    public void play(Media media)
     {
-        Media track = new Media(media.toURI().toString());
-        MediaPlayer player = new MediaPlayer(track);
-        player.play();
+        if (player == null)
+        {
+            player = new MediaPlayer(media);
+            selected = media;
+            player.play();
+
+        }else
+        {
+            if (player.getStatus().equals(MediaPlayer.Status.PLAYING))
+            {
+                if (!media.equals(selected))
+                {
+                    player = new MediaPlayer(media);
+                    selected = media;
+                    player.play();
+                }
+            }
+            if (player.getStatus().equals(MediaPlayer.Status.PAUSED))
+            {
+                if (!media.equals(selected))
+                {
+                    player = new MediaPlayer(media);
+                    selected = media;
+                    player.play();
+                }else
+                {
+                    player.play();
+                }
+            }
+        }
 
 
     }
@@ -72,14 +108,24 @@ public class Controller {
         String selected = list.getSelectionModel().getSelectedItem();
         if (selected != null)
         {
-            for(File load : loaded)
+        playBtn.setVisible(false);
+        pauseBtn.setVisible(true);
+
+            for(Track load : loaded)
             {
-                if (load.getName().equals(selected))
-                {
-                    play(load);
+                if (load.getSource().getName().equals(selected)) {
+                    play(load.getMedia());
                 }
+
             }
         }
+
+    }
+
+    public void pauseClick(ActionEvent actionEvent) {
+        playBtn.setVisible(true);
+        pauseBtn.setVisible(false);
+        player.pause();
 
     }
 }
