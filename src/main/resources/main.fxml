@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+   <children>
+      <ListView fx:id="list" layoutX="299.0" layoutY="40.0" prefHeight="248.0" prefWidth="284.0" />
+      <Label layoutX="300.0" layoutY="15.0" text="Tracks:">
+         <font>
+            <Font name="Trebuchet MS" size="22.0" />
+         </font>
+      </Label>
+      <Button fx:id="browseBtn" layoutX="23.0" layoutY="15.0" mnemonicParsing="false" onAction="#browseClick" text="Browse" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
+      <Button layoutX="14.0" layoutY="326.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="72.0" text="&lt;--" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
+      <Button fx:id="playBtn" layoutX="94.0" layoutY="326.0" mnemonicParsing="false" onAction="#playClick" prefHeight="60.0" prefWidth="72.0" text="Play" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
+      <Button layoutX="174.0" layoutY="326.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="72.0" text="--&gt;" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
+      <Slider layoutX="16.0" layoutY="297.0" prefHeight="14.0" prefWidth="569.0" />
+      <Slider layoutX="569.0" layoutY="318.0" orientation="VERTICAL" prefHeight="76.0" prefWidth="14.0" />
+      <Label layoutX="486.0" layoutY="326.0" text="Volume:">
+         <font>
+            <Font name="Trebuchet MS" size="22.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
