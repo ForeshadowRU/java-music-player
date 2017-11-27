@@ -37,25 +37,34 @@ public class Controller {
     @FXML
     public Button playBtn;
     @FXML
+    public Slider volumeSlider;
+    @FXML
     public Button pauseBtn;
     private ArrayList<Track> loaded = null;
 
     @FXML
     public Slider songSlider;
-    private void updateSliderValue()
+
+    private void updateVolumeSliderValue()
+    {
+        volumeSlider.setValue(player.getVolume() * 100);
+    }
+    private void updateSongSliderValue()
     {
         songSlider.setMax(currentlyPlaying.getMedia().getDuration().toSeconds());
         songSlider.setMin(0);
-        songSlider.adjustValue(player.getCurrentTime().toSeconds());
+        songSlider.setValue(player.getCurrentTime().toSeconds());
         time.setText(Double.toString(player.getCurrentTime().toSeconds()));
     }
 
     private void onFirstTimePlay() {
+
         player.currentTimeProperty().addListener(new ChangeListener<Duration>() {
 
             @Override
             public void changed(ObservableValue observable, Duration oldValue, Duration newValue) {
-                updateSliderValue();
+                updateSongSliderValue();
+
 
             }
 
@@ -64,8 +73,24 @@ public class Controller {
     @FXML
     protected void initialize()
     {
-        loaded = new ArrayList<Track>();
 
+
+
+
+        loaded = new ArrayList<Track>();
+        volumeSlider.setMax(100);
+        volumeSlider.setMin(0);
+        volumeSlider.setBlockIncrement(1);
+        volumeSlider.valueProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable ov) {
+                if (volumeSlider.isValueChanging())
+                {
+                    player.setVolume(volumeSlider.getValue() / 100);
+                }
+                updateVolumeSliderValue();
+            }
+        });
 
         songSlider.valueProperty().addListener(new InvalidationListener() {
             @Override
@@ -74,7 +99,7 @@ public class Controller {
                 {
                     player.seek(currentlyPlaying.getMedia().getDuration().multiply(songSlider.getValue() / 100.0));
                 }
-                updateSliderValue();
+                updateSongSliderValue();
                 }
             });
 
