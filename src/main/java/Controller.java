@@ -65,6 +65,7 @@ public class Controller {
                     for (Track load : loaded) {
                         if (load.getSource().getName().equals(selectedItem)) {
                             if (currentTrack != null) currentTrack.stop();
+                            selected = load;
                             currentTrack = load;
                             playClick(null);
                         }
@@ -75,11 +76,9 @@ public class Controller {
                     for (Track load : loaded) {
                         if (load.getSource().getName().equals(selectedItem)) {
                             if (currentTrack != load) {
-                                playBtn.requestFocus();
                                 playBtn.setVisible(true);
                                 pauseBtn.setVisible(false);
                             } else {
-                                pauseBtn.requestFocus();
                                 playBtn.setVisible(false);
                                 pauseBtn.setVisible(true);
                             }
@@ -117,8 +116,14 @@ public class Controller {
 
     }
 
+    ChangeListener<Duration> sliderValueUpdater;
+    InvalidationListener songSliderInvalidationListener;
+    InvalidationListener volumeSliderInvalidationListener;
+
+
     public void playClick(ActionEvent actionEvent) {
         if (currentTrack != null) currentTrack.stop();
+
         playBtn.setVisible(false);
         pauseBtn.setVisible(true);
         pauseBtn.requestFocus();
@@ -132,20 +137,25 @@ public class Controller {
                 }
             }
             if (selected != null) {
+                disposeCurrent();
                 currentTrack = selected;
                 songSlider.setMax((int) currentTrack.getMedia().getDuration().toSeconds());
 
-                currentTrack.getPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
+
+                sliderValueUpdater = new ChangeListener<Duration>() {
                     @Override
                     public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
                         songSlider.setValue((int) currentTrack.getPlayer().getCurrentTime().toSeconds());
                         updateTimeLabelValue();
                     }
-                });
+                };
+
+                currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
 
 
                 currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
-                volumeSlider.valueProperty().addListener(new InvalidationListener() {
+
+                volumeSliderInvalidationListener  = new InvalidationListener() {
                     @Override
                     public void invalidated(Observable ov) {
                         if (volumeSlider.isValueChanging()) {
@@ -153,22 +163,30 @@ public class Controller {
                         }
                         updateVolumeSliderValue();
                     }
-                });
+                };
 
-                songSlider.valueProperty().addListener(new InvalidationListener() {
+                volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
+
+                songSliderInvalidationListener = new InvalidationListener() {
                     @Override
                     public void invalidated(Observable ov) {
                         if (songSlider.isValueChanging()) {
                             currentTrack.getPlayer().seek(Duration.seconds(Math.floor(songSlider.getValue())));
                         }
                     }
-                });
-
-                selected.play();
+                };
+                songSlider.valueProperty().addListener(songSliderInvalidationListener);
+                currentTrack.play();
             }
         }
     }
 
+    public void disposeCurrent()
+    {
+        if (currentTrack != null && sliderValueUpdater != null) currentTrack.getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
+        if (currentTrack != null && songSliderInvalidationListener != null) songSlider.valueProperty().removeListener(songSliderInvalidationListener);
+        if (currentTrack != null && volumeSliderInvalidationListener != null) volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
+    }
     public void pauseClick(ActionEvent actionEvent) {
         playBtn.setVisible(true);
         pauseBtn.setVisible(false);
