@@ -1,20 +1,13 @@
 import java.io.File;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 public class Track {
 
-    private int order;
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
     private Media media;
     private File source;
+    private MediaPlayer player;
+
 
     public Media getMedia() {
         return media;
@@ -23,6 +16,26 @@ public class Track {
     public File getSource() {
         return source;
     }
+
+    public MediaPlayer getPlayer()
+    {
+        return player;
+    }
+
+    public void play()
+    {
+        player.play();
+
+    }
+    public void pause()
+    {
+        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.pause();
+    }
+    public void stop()
+    {
+        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.stop();
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -46,6 +59,7 @@ public class Track {
 
         this.source = source;
         media = new Media(source.toURI().toString());
+        player = new MediaPlayer(media);
     }
 
     @Override

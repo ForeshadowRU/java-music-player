@@ -19,10 +19,8 @@ import java.util.List;
 
 public class Controller {
 
-    private MediaPlayer player;
-    private int lastOrder = 0;
     private Track selected;
-    private Track currentlyPlaying;
+    private Track currentTrack;
     @FXML
     public Label timeElapsed;
     @FXML
@@ -44,130 +42,58 @@ public class Controller {
     @FXML
     public Slider songSlider;
 
-    private void updateVolumeSliderValue()
-    {
-        volumeSlider.setValue(player.getVolume() * 100);
-    }
-    private void updateSongSliderValue()
-    {
-        timeElapsed.setText( Integer.toString( (int) player.getCurrentTime().toSeconds() / 60) + ":" + Integer.toString((int)player.getCurrentTime().toSeconds() % 60) );
-        timeTotal.setText( Integer.toString( (int) currentlyPlaying.getMedia().getDuration().toSeconds() / 60) + ":" + Integer.toString((int)currentlyPlaying.getMedia().getDuration().toSeconds() % 60)   );
-    }
 
-    private void onFirstTimePlay()
-    {
-        assert player != null;
+    @FXML
+    protected void initialize() {
+        loaded = new ArrayList<Track>();
 
         songSlider.setMin(0);
         songSlider.setBlockIncrement(1);
         songSlider.setValue(0);
-        player.setOnPlaying(new Runnable() {
-            @Override
-            public void run() {
-                songSlider.setMax(currentlyPlaying.getMedia().getDuration().toSeconds());
-                if ((int) player.getCurrentTime().toSeconds() <= songSlider.getMax())
-                {
 
-                    songSlider.setValue((int) player.getCurrentTime().toSeconds());
-
-                }
-
-            }
-
-        });
-        player.setOnEndOfMedia(new Runnable() {
-            @Override
-            public void run() {
-            }
-        });
         volumeSlider.setMax(100);
         volumeSlider.setMin(0);
         volumeSlider.setBlockIncrement(1);
         volumeSlider.setValue(50);
-        player.setVolume(volumeSlider.getValue() / 100);
 
-
-        volumeSlider.valueProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable ov) {
-                if (volumeSlider.isValueChanging())
-                {
-                    player.setVolume(volumeSlider.getValue() / 100);
-                }
-                updateVolumeSliderValue();
-            }
-        });
-
-        player.currentTimeProperty().addListener(new ChangeListener<Duration>() {
-
-            @Override
-            public void changed(ObservableValue observable, Duration oldValue, Duration newValue) {
-                updateSongSliderValue();
-            }
-
-        });
-        songSlider.valueProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable ov) {
-                if (songSlider.isValueChanging())
-                {
-                    player.seek(Duration.seconds(Math.floor(songSlider.getValue())));
-                }
-                updateSongSliderValue();
-            }
-        });
-    }
-    @FXML
-    protected void initialize()
-    {
-        loaded = new ArrayList<Track>();
-
-
-        list.setOnMouseClicked(new EventHandler<MouseEvent>()
-        {
+        list.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 String selectedItem = list.getSelectionModel().getSelectedItem();
-                if(event.getClickCount() == 2)
-                {
-                    if (player == null)
-                    {
-                        for(Track load : loaded)
-                        {
-                            if (load.getSource().getName().equals(selectedItem)) {
-                                play(load);
+
+                if (event.getClickCount() == 2) {
+                    for (Track load : loaded) {
+                        if (load.getSource().getName().equals(selectedItem)) {
+                            if (currentTrack != null) currentTrack.stop();
+                            currentTrack = load;
+                            playClick(null);
+                        }
+                    }
+
+
+                } else if (event.getClickCount() == 1) {
+                    for (Track load : loaded) {
+                        if (load.getSource().getName().equals(selectedItem)) {
+                            if (currentTrack != load) {
+                                playBtn.requestFocus();
+                                playBtn.setVisible(true);
+                                pauseBtn.setVisible(false);
+                            } else {
+                                pauseBtn.requestFocus();
+                                playBtn.setVisible(false);
+                                pauseBtn.setVisible(true);
                             }
-                        }
-                    }
-
-                    assert player != null;
-                    if (player.getStatus().equals(MediaPlayer.Status.PLAYING))
-                    {
-                        player.stop();
-                    }
-                    for(Track load : loaded)
-                    {
-                        if (load.getSource().getName().equals(selectedItem)) {
-                            play(load);
-                        }
-
-                    }
-                }else if (event.getClickCount() == 1)
-                {
-                    for(Track load : loaded)
-                    {
-                        if (load.getSource().getName().equals(selectedItem)) {
                             selected = load;
                         }
 
                     }
 
                 }
-
             }
+
+
         });
     }
-
 
     public void browseClick(javafx.event.ActionEvent actionEvent) {
 
@@ -179,13 +105,10 @@ public class Controller {
         browser.getExtensionFilters().add(mp3Filter);
 
         List<File> selections = browser.showOpenMultipleDialog(browseBtn.getScene().getWindow());
-        if (selections.size() > 0)
-        {
+        if (selections.size() > 0) {
             ObservableList<String> items = list.getItems();
-            for(File selected : selections)
-            {
+            for (File selected : selections) {
                 Track selectedTrack = new Track(selected);
-                selectedTrack.setOrder(lastOrder++);
                 items.add(selectedTrack.getSource().getName());
                 loaded.add(selectedTrack);
             }
@@ -194,69 +117,74 @@ public class Controller {
 
     }
 
-    public void play(Track track)
-    {
+    public void playClick(ActionEvent actionEvent) {
+        if (currentTrack != null) currentTrack.stop();
         playBtn.setVisible(false);
         pauseBtn.setVisible(true);
         pauseBtn.requestFocus();
-        if (player == null)
-        {
-            player = new MediaPlayer(track.getMedia());
-            selected = track;
-            currentlyPlaying = selected;
-            onFirstTimePlay();
 
-
-            player.play();
-
-        }else
-        {
-            if (player.getStatus().equals(MediaPlayer.Status.PLAYING))
-            {
-                if (!track.equals(currentlyPlaying))
-                {
-                    player = new MediaPlayer(track.getMedia());
+        String selectedItem = list.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            for (Track track : loaded) {
+                if (track.getSource().getName().equals(selectedItem)) {
                     selected = track;
-                    currentlyPlaying = selected;
-                    player.play();
-                }else
-                {
-                    player.seek(Duration.ZERO);
+                    break;
                 }
             }
-            if (player.getStatus().equals(MediaPlayer.Status.PAUSED))
-            {
-                if (!track.equals(currentlyPlaying))
-                {
-                    player = new MediaPlayer(track.getMedia());
-                    selected = track;
-                    currentlyPlaying = selected;
-                    player.play();
-                }else
-                {
-                    currentlyPlaying = selected;
-                    player.play();
-                }
+            if (selected != null) {
+                currentTrack = selected;
+                songSlider.setMax((int) currentTrack.getMedia().getDuration().toSeconds());
+
+                currentTrack.getPlayer().currentTimeProperty().addListener(new ChangeListener<Duration>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
+                        songSlider.setValue((int) currentTrack.getPlayer().getCurrentTime().toSeconds());
+                        updateTimeLabelValue();
+                    }
+                });
+
+
+                currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
+                volumeSlider.valueProperty().addListener(new InvalidationListener() {
+                    @Override
+                    public void invalidated(Observable ov) {
+                        if (volumeSlider.isValueChanging()) {
+                            currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
+                        }
+                        updateVolumeSliderValue();
+                    }
+                });
+
+                songSlider.valueProperty().addListener(new InvalidationListener() {
+                    @Override
+                    public void invalidated(Observable ov) {
+                        if (songSlider.isValueChanging()) {
+                            currentTrack.getPlayer().seek(Duration.seconds(Math.floor(songSlider.getValue())));
+                        }
+                    }
+                });
+
+                selected.play();
             }
         }
-
-
-    }
-
-    public void playClick(ActionEvent actionEvent) {
-
-        if (selected != null)
-        {
-            play(selected);
-        }
-
     }
 
     public void pauseClick(ActionEvent actionEvent) {
         playBtn.setVisible(true);
         pauseBtn.setVisible(false);
         playBtn.requestFocus();
-        player.pause();
+        currentTrack.pause();
+
 
     }
+
+    private void updateVolumeSliderValue() {
+        volumeSlider.setValue(currentTrack.getPlayer().getVolume() * 100);
+    }
+
+    private void updateTimeLabelValue() {
+        timeElapsed.setText(Integer.toString((int) currentTrack.getPlayer().getCurrentTime().toSeconds() / 60) + ":" + Integer.toString((int) currentTrack.getPlayer().getCurrentTime().toSeconds() % 60));
+        timeTotal.setText(Integer.toString((int) currentTrack.getMedia().getDuration().toSeconds() / 60) + ":" + Integer.toString((int) currentTrack.getMedia().getDuration().toSeconds() % 60));
+    }
+
 }
