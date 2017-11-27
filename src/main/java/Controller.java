@@ -6,10 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
@@ -23,11 +20,13 @@ import java.util.List;
 public class Controller {
 
     private MediaPlayer player;
-
+    private int lastOrder = 0;
     private Track selected;
     private Track currentlyPlaying;
     @FXML
-    Label time;
+    public Label timeElapsed;
+    @FXML
+    public Label timeTotal;
     @FXML
     public ListView<String> list;
     @FXML
@@ -51,36 +50,43 @@ public class Controller {
     }
     private void updateSongSliderValue()
     {
-        songSlider.setMax(currentlyPlaying.getMedia().getDuration().toSeconds());
-        songSlider.setMin(0);
-        songSlider.setValue(player.getCurrentTime().toSeconds());
-        time.setText(Double.toString(player.getCurrentTime().toSeconds()));
+        timeElapsed.setText( Integer.toString( (int) player.getCurrentTime().toSeconds() / 60) + ":" + Integer.toString((int)player.getCurrentTime().toSeconds() % 60) );
+        timeTotal.setText( Integer.toString( (int) currentlyPlaying.getMedia().getDuration().toSeconds() / 60) + ":" + Integer.toString((int)currentlyPlaying.getMedia().getDuration().toSeconds() % 60)   );
     }
 
-    private void onFirstTimePlay() {
+    private void onFirstTimePlay()
+    {
+        assert player != null;
 
-        player.currentTimeProperty().addListener(new ChangeListener<Duration>() {
-
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
+        songSlider.setValue(0);
+        player.setOnPlaying(new Runnable() {
             @Override
-            public void changed(ObservableValue observable, Duration oldValue, Duration newValue) {
-                updateSongSliderValue();
+            public void run() {
+                songSlider.setMax(currentlyPlaying.getMedia().getDuration().toSeconds());
+                if ((int) player.getCurrentTime().toSeconds() <= songSlider.getMax())
+                {
 
+                    songSlider.setValue((int) player.getCurrentTime().toSeconds());
+
+                }
 
             }
 
         });
-    }
-    @FXML
-    protected void initialize()
-    {
-
-
-
-
-        loaded = new ArrayList<Track>();
+        player.setOnEndOfMedia(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
         volumeSlider.setMax(100);
         volumeSlider.setMin(0);
         volumeSlider.setBlockIncrement(1);
+        volumeSlider.setValue(50);
+        player.setVolume(volumeSlider.getValue() / 100);
+
+
         volumeSlider.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable ov) {
@@ -92,17 +98,29 @@ public class Controller {
             }
         });
 
+        player.currentTimeProperty().addListener(new ChangeListener<Duration>() {
+
+            @Override
+            public void changed(ObservableValue observable, Duration oldValue, Duration newValue) {
+                updateSongSliderValue();
+            }
+
+        });
         songSlider.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable ov) {
                 if (songSlider.isValueChanging())
                 {
-                    player.seek(currentlyPlaying.getMedia().getDuration().multiply(songSlider.getValue() / 100.0));
+                    player.seek(Duration.seconds(Math.floor(songSlider.getValue())));
                 }
                 updateSongSliderValue();
-                }
-            });
-
+            }
+        });
+    }
+    @FXML
+    protected void initialize()
+    {
+        loaded = new ArrayList<Track>();
 
 
         list.setOnMouseClicked(new EventHandler<MouseEvent>()
@@ -163,14 +181,15 @@ public class Controller {
         List<File> selections = browser.showOpenMultipleDialog(browseBtn.getScene().getWindow());
         if (selections.size() > 0)
         {
+            ObservableList<String> items = list.getItems();
             for(File selected : selections)
             {
                 Track selectedTrack = new Track(selected);
-                ObservableList<String> items = list.getItems();
+                selectedTrack.setOrder(lastOrder++);
                 items.add(selectedTrack.getSource().getName());
-                list.setItems(items);
                 loaded.add(selectedTrack);
             }
+            list.setItems(items);
         }
 
     }
@@ -183,9 +202,11 @@ public class Controller {
         if (player == null)
         {
             player = new MediaPlayer(track.getMedia());
-            onFirstTimePlay();
             selected = track;
             currentlyPlaying = selected;
+            onFirstTimePlay();
+
+
             player.play();
 
         }else

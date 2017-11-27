@@ -3,6 +3,16 @@ import javafx.scene.media.Media;
 
 public class Track {
 
+    private int order;
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
     private Media media;
     private File source;
 
