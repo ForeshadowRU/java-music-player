@@ -1,33 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import java.net.URL?>
+<AnchorPane id="musicControls" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
-   <children>
-      <Button fx:id="pauseBtn" layoutX="94.0" layoutY="326.0" mnemonicParsing="false" onAction="#pauseClick" prefHeight="60.0" prefWidth="72.0" text="Pause" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
-      <ListView fx:id="list" layoutX="299.0" layoutY="40.0" prefHeight="248.0" prefWidth="284.0" />
-      <Label layoutX="300.0" layoutY="15.0" text="Tracks:">
+    <TableView  layoutX="50.0" layoutY="50.0" prefHeight="180.0" prefWidth="500.0" >
+
+            <columns >
+
+                <TableColumn prefWidth="50.0" text="№" maxWidth="40"/>
+
+                <TableColumn prefWidth="150.0" text="Artist" maxWidth="120"/>
+                <TableColumn prefWidth="150.0" text="Title" maxWidth="120"/>
+                <TableColumn prefWidth="150.0" text="Duration" maxWidth="120"/>
+            </columns>
+
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+
+    </TableView>
+
+
+     <ListView fx:id="list" layoutX="300.0" layoutY="50.0" prefHeight="180.0" prefWidth="275.0" />
+
+
+    <Label layoutX="300.0" layoutY="30" text="Track list:">
          <font>
-            <Font name="Trebuchet MS" size="22.0" />
+             <Font name="Trebuchet MS" size="16.0" />
          </font>
-      </Label>
-      <Button fx:id="browseBtn" layoutX="23.0" layoutY="15.0" mnemonicParsing="false" onAction="#browseClick" text="Browse" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
-      <Button layoutX="14.0" layoutY="326.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="72.0" text="&lt;--" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
-      <Button fx:id="playBtn" layoutX="94.0" layoutY="326.0" mnemonicParsing="false" onAction="#playClick" prefHeight="60.0" prefWidth="72.0" text="Play" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
-      <Button layoutX="174.0" layoutY="326.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="72.0" text="--&gt;" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
-      <Slider fx:id="songSlider" layoutX="16.0" layoutY="297.0" prefHeight="14.0" prefWidth="569.0" />
-      <Slider fx:id="volumeSlider" layoutX="569.0" layoutY="318.0" orientation="VERTICAL" prefHeight="76.0" prefWidth="14.0" value="100"/>
-      <Label layoutX="486.0" layoutY="326.0" text="Volume:">
-         <font>
-            <Font name="Trebuchet MS" size="22.0" />
-         </font>
-      </Label>
+     </Label>
+    <MenuBar layoutY="2.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <Menu text="File">
+            <MenuItem mnemonicParsing="false" text="Add Tracks ..." onAction="#browseClick"/>
+            <MenuItem mnemonicParsing="false" text="Close"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+            <MenuItem mnemonicParsing="false" text="Delete"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem mnemonicParsing="false" text="About"/>
+        </Menu>
+    </MenuBar>
+
+    <ProgressBar fx:id="songBar" id="songBar" layoutX="16.0" layoutY="297.0" prefHeight="14.0" prefWidth="569.0" progress="0.5" />
+    <Slider  fx:id="songSlider" id="songSlider" layoutX="16.0" layoutY="297.0" prefHeight="14.0" prefWidth="569.0"  />
+
+    <ProgressBar id="volumeBar" layoutX="480.0" layoutY="343.0" prefHeight="5.0" prefWidth="100.0"  progress="25" />
+     <Slider fx:id="volumeSlider" layoutX="480.0" layoutY="315.0" prefHeight="76.0" prefWidth="100.0" value="100" />
+
+    <ImageView id="volumeControl" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="420" layoutY="328.0" pickOnBounds="true" preserveRatio="true">
+
+        <Image url="@img/volumeControl/speaker-low.png" />
+    </ImageView>
+
+      <ImageView id="playBtn" fx:id="playButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="106.0" layoutY="328.0" pickOnBounds="true" preserveRatio="true">
+
+          <Image url="@img/controlPanel/play.png" />
+      </ImageView>
+    <ImageView id="pauseBtn" fx:id="pauseButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="106.0" layoutY="328.0" pickOnBounds="true" preserveRatio="true">
+
+        <Image url="@img/controlPanel/pause.png" />
+    </ImageView>
+      <ImageView id="forwardBtn" fx:id="forwardButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="168" layoutY="328.0" pickOnBounds="true" preserveRatio="true">
+
+          <Image url="@img/controlPanel/forward.png" />
+      </ImageView>
+      <ImageView id="backwardBtn" fx:id="backwardButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="40" layoutY="328.0" pickOnBounds="true" preserveRatio="true">
+
+          <Image url="@img/controlPanel/backward.png" />
+      </ImageView>
+
       <Label fx:id="timeElapsed" layoutX="16.0" layoutY="271.0" text="0:00" />
       <Label fx:id="timeTotal" layoutX="200.0" layoutY="271.0" text="0:00" />
-   </children>
-</AnchorPane>
+
+
+
+
+  </AnchorPane>

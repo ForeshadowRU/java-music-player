@@ -1,0 +1,59 @@
+#pauseButton
+{
+    -fx-image: url("img/controlPanel/pause.png");
+}
+#pauseButton:hover
+{
+    -fx-image: url("img/controlPanel/pause-selected.png");
+}
+#playBtn
+{
+    -fx-image: url("img/controlPanel/play.png");
+}
+#playBtn:hover
+{
+    -fx-image: url("img/controlPanel/play-selected.png");
+}
+#forwardBtn
+{
+    -fx-image: url("img/controlPanel/forward.png");
+}
+#forwardBtn:hover
+{
+    -fx-image: url("img/controlPanel/forward-selected.png");
+}
+#backwardBtn
+{
+    -fx-image: url("img/controlPanel/backward.png");
+}
+#backwardBtn:hover
+{
+    -fx-image: url("img/controlPanel/backward-selected.png");
+}
+#musicControls
+{
+    -fx-background-color: linear-gradient(white, lightblue);
+    -fx-end-margin: -25;
+
+}
+.progress-bar
+{
+    -fx-pref-height: 17px;
+    -fx-background-color: cornflowerblue;
+}
+.slider .track {
+    -fx-background-color:null;
+    -fx-background-insets: 1 0 -1 0, 0, 1;
+    -fx-background-radius: 2.5, 2.5, 1.5;
+    -fx-border-style: none;
+    -fx-padding: 0.208333em;
+}
+.slider .thumb
+{
+    -fx-background-color: rgb(255, 243, 243);
+    -fx-background-radius: 4px;
+    -fx-cursor: pointer;
+    -fx-pref-height: 17px;
+    -fx-prefer-width: 18px;
+
+}

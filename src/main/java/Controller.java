@@ -7,8 +7,9 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -28,23 +29,45 @@ public class Controller {
     @FXML
     public ListView<String> list;
     @FXML
-    public Button browseBtn;
-    @FXML
-    private FileChooser browser;
-    @FXML
-    public Button playBtn;
-    @FXML
     public Slider volumeSlider;
-    @FXML
-    public Button pauseBtn;
-    private ArrayList<Track> loaded = null;
 
+    private ArrayList<Track> loaded = null;
+@FXML
+public TableView<String> trackList;
     @FXML
     public Slider songSlider;
-
+    @FXML
+    public ProgressBar songBar;
+    @FXML
+    public ImageView pauseButton;
+    @FXML
+    public ImageView playButton;
+    @FXML
+    public ImageView forwardButton;
+    @FXML
+    public ImageView backwardButton;
 
     @FXML
     protected void initialize() {
+        songBar.setProgress(0);
+
+        songSlider.valueProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                if (currentTrack!= null) songBar.setProgress(songSlider.getValue()/currentTrack.getPlayer().getCurrentTime().toSeconds());
+            }
+        });
+
+
+        playButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                playClick(null);
+            }
+        });
+
+
+
         loaded = new ArrayList<Track>();
 
         songSlider.setMin(0);
@@ -56,6 +79,7 @@ public class Controller {
         volumeSlider.setBlockIncrement(1);
         volumeSlider.setValue(50);
 
+        list.setVisible(false);
         list.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -76,11 +100,11 @@ public class Controller {
                     for (Track load : loaded) {
                         if (load.getSource().getName().equals(selectedItem)) {
                             if (currentTrack != load) {
-                                playBtn.setVisible(true);
-                                pauseBtn.setVisible(false);
+                                playButton.setVisible(true);
+                                pauseButton.setVisible(false);
                             } else {
-                                playBtn.setVisible(false);
-                                pauseBtn.setVisible(true);
+                                playButton.setVisible(false);
+                                pauseButton.setVisible(true);
                             }
                             selected = load;
                         }
@@ -96,15 +120,16 @@ public class Controller {
 
     public void browseClick(javafx.event.ActionEvent actionEvent) {
 
-        browser = new FileChooser();
+        FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
         FileChooser.ExtensionFilter mp3Filter = new FileChooser.ExtensionFilter("MP3 (*.mp3)", "*.mp3");
         FileChooser.ExtensionFilter wavFilter = new FileChooser.ExtensionFilter("Wav (*.wav)", "*.wav");
-        browser.getExtensionFilters().add(wavFilter);
         browser.getExtensionFilters().add(mp3Filter);
+        browser.getExtensionFilters().add(wavFilter);
 
-        List<File> selections = browser.showOpenMultipleDialog(browseBtn.getScene().getWindow());
+        List<File> selections = browser.showOpenMultipleDialog(playButton.getScene().getWindow());
         if (selections.size() > 0) {
+
             ObservableList<String> items = list.getItems();
             for (File selected : selections) {
                 Track selectedTrack = new Track(selected);
@@ -114,19 +139,22 @@ public class Controller {
             list.setItems(items);
         }
 
+
     }
 
-    ChangeListener<Duration> sliderValueUpdater;
-    InvalidationListener songSliderInvalidationListener;
-    InvalidationListener volumeSliderInvalidationListener;
+    private ChangeListener<Duration> sliderValueUpdater;
+    private InvalidationListener songSliderInvalidationListener;
+    private InvalidationListener volumeSliderInvalidationListener;
 
 
     public void playClick(ActionEvent actionEvent) {
+        if (selected == null && currentTrack == null) return;
+
         if (currentTrack != null) currentTrack.stop();
 
-        playBtn.setVisible(false);
-        pauseBtn.setVisible(true);
-        pauseBtn.requestFocus();
+        playButton.setVisible(false);
+        pauseButton.setVisible(true);
+        pauseButton.requestFocus();
 
         String selectedItem = list.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
@@ -188,9 +216,9 @@ public class Controller {
         if (currentTrack != null && volumeSliderInvalidationListener != null) volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
     }
     public void pauseClick(ActionEvent actionEvent) {
-        playBtn.setVisible(true);
-        pauseBtn.setVisible(false);
-        playBtn.requestFocus();
+        playButton.setVisible(true);
+        pauseButton.setVisible(false);
+        playButton.requestFocus();
         currentTrack.pause();
 
 
