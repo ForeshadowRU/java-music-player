@@ -1,4 +1,7 @@
 import java.io.File;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.MapChangeListener;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -7,7 +10,43 @@ public class Track {
     private Media media;
     private File source;
     private MediaPlayer player;
+    private SimpleStringProperty artist;
+    private SimpleStringProperty title;
+    private SimpleStringProperty album;
 
+    public String getArtist() {
+        return artist.get();
+    }
+
+    public SimpleStringProperty artistProperty() {
+        return artist;
+    }
+
+    public String getTitle() {
+        return title.get();
+    }
+
+    public SimpleStringProperty titleProperty() {
+        return title;
+    }
+
+    public String getAlbum() {
+        return album.get();
+    }
+
+    public SimpleStringProperty albumProperty() {
+        return album;
+    }
+
+    public boolean isReady() {
+        return isReady;
+    }
+
+    public void setReady(boolean ready) {
+        isReady = ready;
+    }
+
+    boolean isReady = false;
 
     public Media getMedia() {
         return media;
@@ -57,6 +96,9 @@ public class Track {
 
     public Track(File source) {
 
+        artist = new SimpleStringProperty();
+        album = new SimpleStringProperty();
+        title = new SimpleStringProperty();
         this.source = source;
         media = new Media(source.toURI().toString());
         player = new MediaPlayer(media);

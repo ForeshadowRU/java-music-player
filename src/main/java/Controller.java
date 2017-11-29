@@ -2,17 +2,23 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
+import javafx.scene.control.Label;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
+import javax.print.attribute.standard.Media;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +26,7 @@ import java.util.List;
 
 public class Controller {
 
+    private long order = 0;
     private Track selected;
     private Track currentTrack;
     @FXML
@@ -30,10 +37,10 @@ public class Controller {
     public ListView<String> list;
     @FXML
     public Slider volumeSlider;
-
+    @FXML
+    public Tab libraryTab;
     private ArrayList<Track> loaded = null;
-@FXML
-public TableView<String> trackList;
+
     @FXML
     public Slider songSlider;
     @FXML
@@ -48,13 +55,49 @@ public TableView<String> trackList;
     public ImageView backwardButton;
 
     @FXML
+    public TabPane tab;
+    @FXML
+    public AnchorPane pane;
+    @FXML
+    public Pane viewContainer;
+
+    public final double VIEW_HEIGHT = 60;
+    public final double VIEW_WIDTH = 500;
+    public final double UNSELECTED_X = 50;
+
+
+    private ArrayList<TrackView> views;
+
+
+
+
+    private void addView(final Track track)
+    {
+        if (views == null) views = new ArrayList<>();
+        TrackView view = new TrackView(track,views);
+        viewContainer.getChildren().add(view.getView());
+    }
+
+
+    @FXML
     protected void initialize() {
+
+        pauseButton.setVisible(false);
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
+        songSlider.setValue(0);
+        songSlider.setMax(100);
         songBar.setProgress(0);
+        songSlider.setValue(50);
 
         songSlider.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
                 if (currentTrack!= null) songBar.setProgress(songSlider.getValue()/currentTrack.getPlayer().getCurrentTime().toSeconds());
+                else
+                {
+                    songBar.setProgress(songSlider.getValue() / 100);
+                }
             }
         });
 
@@ -70,9 +113,7 @@ public TableView<String> trackList;
 
         loaded = new ArrayList<Track>();
 
-        songSlider.setMin(0);
-        songSlider.setBlockIncrement(1);
-        songSlider.setValue(0);
+
 
         volumeSlider.setMax(100);
         volumeSlider.setMin(0);
@@ -118,7 +159,10 @@ public TableView<String> trackList;
         });
     }
 
-    public void browseClick(javafx.event.ActionEvent actionEvent) {
+    public void browseClick(ActionEvent actionEvent) {
+        //final Alert kek = new Alert(Alert.AlertType.INFORMATION);
+        //kek.setContentText(String.valueOf(trackList.getColumns().get(0).getText()));
+
 
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
@@ -127,16 +171,16 @@ public TableView<String> trackList;
         browser.getExtensionFilters().add(mp3Filter);
         browser.getExtensionFilters().add(wavFilter);
 
-        List<File> selections = browser.showOpenMultipleDialog(playButton.getScene().getWindow());
-        if (selections.size() > 0) {
 
-            ObservableList<String> items = list.getItems();
-            for (File selected : selections) {
-                Track selectedTrack = new Track(selected);
-                items.add(selectedTrack.getSource().getName());
-                loaded.add(selectedTrack);
-            }
-            list.setItems(items);
+        List<File> selections = browser.showOpenMultipleDialog(playButton.getScene().getWindow());
+
+        if (selections.size() > 0) {
+                for (File selected : selections) {
+                    final Track selectedTrack = new Track(selected);
+                    addView(selectedTrack);
+                    loaded.add(selectedTrack);
+                }
+
         }
 
 
