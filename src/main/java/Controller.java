@@ -2,23 +2,20 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
-import javax.print.attribute.standard.Media;
-import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +23,6 @@ import java.util.List;
 
 public class Controller {
 
-    private long order = 0;
-    private Track selected;
-    private Track currentTrack;
     @FXML
     public Label timeElapsed;
     @FXML
@@ -37,10 +31,6 @@ public class Controller {
     public ListView<String> list;
     @FXML
     public Slider volumeSlider;
-    @FXML
-    public Tab libraryTab;
-    private ArrayList<Track> loaded = null;
-
     @FXML
     public Slider songSlider;
     @FXML
@@ -53,28 +43,24 @@ public class Controller {
     public ImageView forwardButton;
     @FXML
     public ImageView backwardButton;
-
-    @FXML
-    public TabPane tab;
     @FXML
     public AnchorPane pane;
     @FXML
     public Pane viewContainer;
 
-    public final double VIEW_HEIGHT = 60;
-    public final double VIEW_WIDTH = 500;
-    public final double UNSELECTED_X = 50;
-
-
     private ArrayList<TrackView> views;
 
+    private ArrayList<Track> loaded;
 
+    private ArrayList<Track> selected;
+
+    private Track currentTrack;
 
 
     private void addView(final Track track)
     {
         if (views == null) views = new ArrayList<>();
-        TrackView view = new TrackView(track,views);
+        TrackView view = new TrackView(track, views, viewContainer);
         viewContainer.getChildren().add(view.getView());
     }
 
@@ -110,6 +96,12 @@ public class Controller {
         });
 
 
+        volumeSlider.valueProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+
+            }
+        });
 
         loaded = new ArrayList<Track>();
 
@@ -130,8 +122,8 @@ public class Controller {
                     for (Track load : loaded) {
                         if (load.getSource().getName().equals(selectedItem)) {
                             if (currentTrack != null) currentTrack.stop();
-                            selected = load;
-                            currentTrack = load;
+                            //selected = load;
+                            //currentTrack = load;
                             playClick(null);
                         }
                     }
@@ -147,7 +139,7 @@ public class Controller {
                                 playButton.setVisible(false);
                                 pauseButton.setVisible(true);
                             }
-                            selected = load;
+                            // selected = load;
                         }
 
                     }
@@ -159,10 +151,7 @@ public class Controller {
         });
     }
 
-    public void browseClick(ActionEvent actionEvent) {
-        //final Alert kek = new Alert(Alert.AlertType.INFORMATION);
-        //kek.setContentText(String.valueOf(trackList.getColumns().get(0).getText()));
-
+    public void browseClick() {
 
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
@@ -204,13 +193,13 @@ public class Controller {
         if (selectedItem != null) {
             for (Track track : loaded) {
                 if (track.getSource().getName().equals(selectedItem)) {
-                    selected = track;
+                    //selected = track;
                     break;
                 }
             }
             if (selected != null) {
                 disposeCurrent();
-                currentTrack = selected;
+                // currentTrack = selected;
                 songSlider.setMax((int) currentTrack.getMedia().getDuration().toSeconds());
 
 
