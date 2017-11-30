@@ -69,11 +69,7 @@ public class Controller {
         if (views.size() == 0)
             view.getView().setLayoutY(10);
         else
-//<<<<<<< HEAD
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y_OFFSET + UNSELECTED_Y_OFFSET);
-//=======
-            //view.getView().setLayoutY(views.get(views.size() - 1).getView().getLayoutY() + UNSELECTED_Y_OFFSET + VIEW_HEIGHT * views.size());
-//>>>>>>> 517175e261e46df7ae5e95c9f777639d7174f7ff
 
         track.getPlayer().setOnReady(() -> {
             track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
