@@ -18,8 +18,7 @@
     <MenuBar layoutY="2.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <Menu text="File">
             <MenuItem mnemonicParsing="false" onAction="#browseClick" text="Add Tracks ..." />
-            <MenuItem mnemonicParsing="false" onAction="#browseFolderClick" text="Search in folder ..." />
-
+            <MenuItem mnemonicParsing="false" onAction="#browseFolderClick" text="Search in folder ..."/>
             <MenuItem mnemonicParsing="false" text="Close" />
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">

@@ -51,19 +51,17 @@ public class Controller {
 
     private Track currentTrack;
 
+    //------------------------------------------------------------------
+    /** Use this var's for offset's control
+     *
+     */
+    private double VIEW_HEIGHT = 60;
+    private double VIEW_WIDTH = 500;
+    private double UNSELECTED_Y = 10;
+    private double UNSELECTED_X = 50;
+    private double SELECTED_X = 20;
+
     private void addView(Track track) {
-
-        /** Use this var's for offset's control
-         *
-         */
-        double VIEW_HEIGHT = 60;
-        double VIEW_WIDTH = 500;
-        double UNSELECTED_Y = 10;
-        double UNSELECTED_X = 50;
-        double SELECTED_X = 20;
-//------------------------------------------------------------------
-
-
         TrackView view = new TrackView(track);
         view.getView().setPrefSize(VIEW_WIDTH, VIEW_HEIGHT);
         view.getView().setId("unselectedNode");
@@ -72,8 +70,6 @@ public class Controller {
             view.getView().setLayoutY(10);
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
-
-
 
 
         ContextMenu menu = new ContextMenu();
@@ -95,14 +91,8 @@ public class Controller {
          */
 
         view.getView().setOnMousePressed(event -> {
-            if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
-                for (TrackView temp : views) {
-                    if (temp.getView().getId() == "selectedNode") {
-                        selected.remove(temp);
-                        temp.getView().setId("unselectedNode");
-                        temp.getView().setLayoutX(UNSELECTED_X);
-                    }
-                }
+            if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
+                clearSelected();
                 view.getView().setId("selectedNode");
                 selected.add(view);
                 view.getView().setLayoutX(SELECTED_X);
@@ -113,13 +103,7 @@ public class Controller {
                     view.getView().setLayoutX(SELECTED_X);
                     view.getView().setId("selectedNode");
                 } else {
-                    for (TrackView temp : views) {
-                        if (temp.getView().getId() == "selectedNode") {
-                            selected.remove(temp);
-                            temp.getView().setId("unselectedNode");
-                            temp.getView().setLayoutX(UNSELECTED_X);
-                        }
-                    }
+                    clearSelected();
                     if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
                         selected.add(view);
                         view.getView().setLayoutX(SELECTED_X);
@@ -132,12 +116,9 @@ public class Controller {
         view.getView().setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 if (event.isShiftDown()) {
-
                 }
-
             }
         });
-
 
         ImageView image = new ImageView();
         image.setFitHeight(60);
@@ -207,14 +188,53 @@ public class Controller {
         views.add(view);
 
     }
+
     private void clearSelected() {
         for (TrackView sel : selected) {
             sel.getView().setId("unselectedNode");
+            sel.getView().setLayoutX(UNSELECTED_X);
         }
+        currentPlayList.clear();
         selected.clear();
     }
 
+
+    @FXML
+    protected void initialize() {
+        currentPlayList = new ArrayList<>();
+        views = new ArrayList<>();
+        selected = new ArrayList<>();
+
+        pauseButton.setVisible(false);
+        pauseButton.setOnMouseClicked(event -> pauseClick());
+        playButton.setOnMouseClicked(event -> playClick());
+
+        pane.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                clearSelected();
+            }
+        });
+
+        currentPlayList = new ArrayList<>();
+
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
+        songSlider.setMax(100);
+        songSlider.setValue(0);
+        songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getMax() / songSlider.getValue()));
+        songSlider.setDisable(true);
+
+        volumeSlider.setMin(0);
+        volumeSlider.setMax(100);
+        volumeSlider.setValue(30);
+        volumeBar.setProgress(0.3);
+        volumeSlider.setBlockIncrement(1);
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
+
+    }
+
     private InvalidationListener songBarSliderSync;
+
 
     private void searchForMp3(File directory) {
         if (!directory.isDirectory() || directory.listFiles() == null) return;
@@ -268,6 +288,7 @@ public class Controller {
     private InvalidationListener songSliderInvalidationListener;
     private InvalidationListener volumeSliderInvalidationListener;
 
+
     @FXML
     protected void initialize() {
         currentPlayList = new ArrayList<>();
@@ -302,21 +323,20 @@ public class Controller {
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
 
     }
-
     private void play (int index) {
         songSlider.setDisable(false);
-
         currentTrack = currentPlayList.get(index).getTrack();
         currentTrack.getPlayer().play();
         currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
         currentTrack.getPlayer().setOnEndOfMedia(() -> {
             if (index + 1 < currentPlayList.size()) {
-                play (index + 1 );
+                play(index + 1);
             } else {
                 currentTrack.getPlayer().stop();
+                pauseButton.setVisible(false);
+                playButton.setVisible(true);
             }
             disposeCurrent();
-
         });
         songSlider.setMax((int) currentTrack.getPlayer().getMedia().getDuration().toSeconds());
         songSlider.setMin(0);
@@ -343,10 +363,8 @@ public class Controller {
 
         volumeSliderInvalidationListener = observable -> currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
-
     }
     private void playClick() {
-
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {
             currentPlayList.clear();
@@ -360,11 +378,9 @@ public class Controller {
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
-
     }
 
-    public void disposeCurrent()
-    {
+    public void disposeCurrent() {
         if (currentTrack != null && sliderValueUpdater != null)
             currentTrack.getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
         if (currentTrack != null && songSliderInvalidationListener != null)
@@ -391,5 +407,4 @@ public class Controller {
         playButton.requestFocus();
         currentTrack.pause();
     }
-
 }
