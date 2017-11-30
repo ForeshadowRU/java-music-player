@@ -1,16 +1,10 @@
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -22,12 +16,6 @@ import java.util.List;
 
 
 public class Controller {
-    private double VIEW_HEIGHT = 60;
-    private double VIEW_WIDTH = 500;
-    private double UNSELECTED_X = 50;
-    private double UNSELECTED_Y_OFFSET = 10;
-
-
     @FXML
     public Label timeElapsed;
     @FXML
@@ -55,22 +43,37 @@ public class Controller {
 
     private ArrayList<TrackView> views;
 
-    private ArrayList<Track> loaded;
-
     private ArrayList<TrackView> selected;
+
+    private List<Track> currentPlayList;
 
     private Track currentTrack;
 
     private void addView(Track track) {
 
+        /** Use this var's for offset's control
+         *
+         */
+        double VIEW_HEIGHT = 60;
+        double VIEW_WIDTH = 500;
+        double UNSELECTED_X = 50;
+        double UNSELECTED_Y_OFFSET = 10;
+        double SELECTED_X = 20;
+//------------------------------------------------------------------
+
+
         TrackView view = new TrackView(track);
         view.getView().setPrefSize(VIEW_WIDTH,VIEW_HEIGHT);
-        view.getView().setId("libNode");
+        view.getView().setId("unselectedNode");
         view.getView().setLayoutX(UNSELECTED_X);
         if (views.size() == 0)
             view.getView().setLayoutY(10);
         else
-            view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * 10 + 10);
+//<<<<<<< HEAD
+            view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y_OFFSET + UNSELECTED_Y_OFFSET);
+//=======
+            //view.getView().setLayoutY(views.get(views.size() - 1).getView().getLayoutY() + UNSELECTED_Y_OFFSET + VIEW_HEIGHT * views.size());
+//>>>>>>> 517175e261e46df7ae5e95c9f777639d7174f7ff
 
         track.getPlayer().setOnReady(() -> {
             track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
@@ -91,42 +94,23 @@ public class Controller {
         deleteItem.setOnAction(event -> viewContainer.getChildren().remove(view.getView()));
         menu.getItems().add(deleteItem);
 
-
-        view.getView().setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getButton() == MouseButton.SECONDARY) {
-                    menu.show(view.getView(), Side.BOTTOM, 0, 0);
-                } else if (!event.isShiftDown() && event.getButton() == MouseButton.PRIMARY) {
-                    for (TrackView view : views) {
-                        view.getView().setId("libNode");
-                    }
-                    selected.clear();
-                }
-                if (event.getButton() == MouseButton.PRIMARY)
-                {
-                    if (event.getClickCount() == 2)
-                    {
-                        selected.clear();
-                        selected.add(view);
-                        if (currentTrack != null) currentTrack.stop();
-                        currentTrack = view.getTrack();
-                        playClick();
-                    }else
-                    if (selected.contains(view))
-                    {
-                        selected.remove(view);
-                        view.getView().setId("libNode");
-                    }
-                    else {
-                        selected.add(view);
-                        view.getView().setId("selectedNode");
-                    }
-
-
-
+        /**TODO: Write selection logic here.
+         * Single Click: select only clicked.
+         * Double Click: play only clicked;
+         * Single Click on Selected: do nothing;
+         * Single Click with Shift Pressed: add clicked to selection;
+         * Single Click with Shift Pressed on Selected: remove clicked from selection;
+         * Double Click with Shift selected: play all selected;
+         *
+         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
+         *
+         */
+        view.getView().setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                if (event.isShiftDown()) {
 
                 }
+
             }
         });
         Label metadata = new Label();
@@ -162,17 +146,21 @@ public class Controller {
     {
         for (TrackView sel : selected)
         {
-            sel.getView().setId("libNode");
+            sel.getTrack().getPlayer().setOnEndOfMedia(() -> sel.getTrack().getPlayer().stop());
+            sel.getView().setId("unselectedNode");
         }
+        selected.clear();
     }
     @FXML
     protected void initialize() {
+        currentPlayList = new ArrayList<>();
         views = new ArrayList<>();
-        loaded = new ArrayList<>();
         selected = new ArrayList<>();
+
         pauseButton.setVisible(false);
         pauseButton.setOnMouseClicked(event -> pauseClick());
         playButton.setOnMouseClicked(event -> playClick());
+
         pane.setOnKeyPressed(event ->
         {
             if (event.getCode() == KeyCode.ESCAPE)
@@ -180,6 +168,19 @@ public class Controller {
                 clearSelected();
             }
         });
+
+        /**
+         *  Song slider init
+         */
+        songSlider.setDisable(true);
+        songSlider.setMin(0);
+        songSlider.setMax(100);
+        songSlider.setValue(0);
+        songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getValue()));
+
+
+
+
     }
 
     public void browseClick() {
@@ -197,7 +198,6 @@ public class Controller {
         {
             Track selectedTrack = new Track(selectedFile);
             addView(selectedTrack);
-            loaded.add(selectedTrack);
         }
 
     }
@@ -206,9 +206,13 @@ public class Controller {
     private InvalidationListener songSliderInvalidationListener;
     private InvalidationListener volumeSliderInvalidationListener;
 
-
+    //TODO: We should separate play function for both playlists and single track;
     private void playClick() {
-        if (currentTrack != null) currentTrack.getPlayer().stop();
+
+        if (currentTrack != null) {
+            currentTrack.getPlayer().stop();
+            disposeCurrent();
+        }
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
@@ -228,6 +232,27 @@ public class Controller {
                 currentTrack.play();
             });
         }
+        /**
+         *  TODO: songSlider controller should be defined here as it's different to each track.
+         *  TODO: setSlider max value at tracks duration in seconds;
+         *  TODO: add Volume control and listener for volumeSlider;
+         */
+        sliderValueUpdater = (observable, oldValue, newValue) -> {
+            //what to do when track's time changing? Adjust slider value;
+        };
+        songSliderInvalidationListener = observable -> {
+            //What to do when user is moving songSlider?
+            //currentTrack.getPlayer().seek();
+        };
+        songSlider.valueProperty().addListener(songSliderInvalidationListener);
+
+        volumeSliderInvalidationListener = observable -> {
+            //What to do when volume Slider value were changed?
+        };
+        volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
+
+        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
+
         currentTrack.getPlayer().play();
 
 
@@ -235,9 +260,12 @@ public class Controller {
 
     public void disposeCurrent()
     {
-        ///if (currentTrack != null && sliderValueUpdater != null) currentTrack.getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
-        /// if(currentTrack != null && songSliderInvalidationListener != null) songSlider.valueProperty().removeListener(songSliderInvalidationListener);
-        ///if (currentTrack != null && volumeSliderInvalidationListener != null) volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
+        if (currentTrack != null && sliderValueUpdater != null)
+            currentTrack.getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
+        if (currentTrack != null && songSliderInvalidationListener != null)
+            songSlider.valueProperty().removeListener(songSliderInvalidationListener);
+        if (currentTrack != null && volumeSliderInvalidationListener != null)
+            volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
     }
 
 
