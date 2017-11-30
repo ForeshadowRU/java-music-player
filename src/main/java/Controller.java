@@ -91,8 +91,8 @@ public class Controller {
         menu.getItems().add(deleteItem);
 
         /**TODO: Write selection logic here.
-         * Single Click: select only clicked.
-         * Double Click: play only clicked;
+         * Single Click: select only clicked. +
+         * Double Click: play only clicked; +
          * Single Click on Selected: do nothing;
          * Single Click with Shift Pressed: add clicked to selection;
          * Single Click with Shift Pressed on Selected: remove clicked from selection;
@@ -101,6 +101,46 @@ public class Controller {
          * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
          *
          */
+
+        view.getView().setOnMousePressed(event -> {
+            Alert kek = new Alert(Alert.AlertType.INFORMATION);
+            kek.setTitle("info");
+            if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
+                for (TrackView temp : views) {
+                    if (temp.getView().getId() == "selectedNode") {
+                        selected.remove(temp);
+                        temp.getView().setId("unselectedNode");
+                    }
+                }
+                view.getView().setId("selectedNode");
+                selected.add(view);
+                playClick();
+            } else {
+                if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
+                    selected.add(view);
+                    view.getView().setId("selectedNode");
+                } else {
+                    for (TrackView temp : views) {
+                        if (temp.getView().getId() == "selectedNode") {
+                            selected.remove(temp);
+                            temp.getView().setId("unselectedNode");
+                        }
+                    }
+                    if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+
+                        selected.add(view);
+                        view.getView().setId("selectedNode");
+                    }
+                }
+            }
+            kek.setContentText(Integer.toString(selected.size()));
+            //kek.show();
+        });
+
+        //view.getView().setOnMousePressed(event -> {
+
+        //});
+
         view.getView().setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 if (event.isShiftDown()) {
