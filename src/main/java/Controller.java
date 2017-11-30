@@ -158,10 +158,17 @@ public class Controller {
         view.getView().getChildren().add(metadata);
         metadata.textProperty().bind(track.artistProperty());
 
+        Label time = new Label();
+        time.setLayoutX((VIEW_WIDTH / 100 * 80));
+        time.setLayoutY(VIEW_HEIGHT - 25);
+        time.setId("label");
+        time.setMaxWidth(80);
+
+        view.getView().getChildren().add(time);
 
         metadata = new Label();
         metadata.setLayoutX((VIEW_WIDTH / 100 * 65));
-        metadata.setLayoutY(10);
+        metadata.setLayoutY(5);
         metadata.setId("label");
         metadata.setMaxWidth(200);
         metadata.textProperty().bind(track.titleProperty());
@@ -188,7 +195,7 @@ public class Controller {
             } else {
                 track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
             }
-
+            time.setText(timeFormat(track.getMedia().getDuration()));
         });
 
         viewContainer.getChildren().add(view.getView());
@@ -326,6 +333,14 @@ public class Controller {
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
     }
 
+
+    private String timeFormat(Duration duration) {
+        int minutes = (int) duration.toMinutes();
+        int seconds = (int) duration.toSeconds() - minutes * 60;
+        if (seconds < 10) return Integer.toString(minutes).concat(":0").concat(Integer.toString(seconds));
+        else return Integer.toString(minutes).concat(":").concat(Integer.toString(seconds));
+
+    }
 
     public void pauseClick() {
         playButton.setVisible(true);
