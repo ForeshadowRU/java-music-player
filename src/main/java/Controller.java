@@ -322,14 +322,14 @@ public class Controller {
     }
     private void playClick() {
         if (selected.size() == 0) return;
-        else {
-            for (TrackView temp :  views) {
-                if (selected.contains(temp)) {
-                    currentPlayList.add(temp.getTrack());
-                }
+
+        selected.clear();
+        for (TrackView temp :  views) {
+            if (selected.contains(temp)) {
+                currentPlayList.add(temp.getTrack());
             }
         }
-
+        
         play (0);
 
         pauseButton.setVisible(true);
