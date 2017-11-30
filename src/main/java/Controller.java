@@ -95,8 +95,6 @@ public class Controller {
          */
 
         view.getView().setOnMousePressed(event -> {
-            Alert kek = new Alert(Alert.AlertType.INFORMATION);
-            kek.setTitle("info");
             if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
                 for (TrackView temp : views) {
                     if (temp.getView().getId() == "selectedNode") {
@@ -129,8 +127,6 @@ public class Controller {
                     }
                 }
             }
-            kek.setContentText(Integer.toString(selected.size()));
-            //kek.show();
         });
 
         view.getView().setOnMouseClicked(event -> {
@@ -211,8 +207,6 @@ public class Controller {
         views.add(view);
 
     }
-
-
     private void clearSelected() {
         for (TrackView sel : selected) {
             sel.getView().setId("unselectedNode");
@@ -246,8 +240,6 @@ public class Controller {
         songSlider.setMax(100);
         songSlider.setValue(0);
         songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getValue()));
-
-
     }
 
     private void searchForMp3(File directory) {
@@ -302,32 +294,45 @@ public class Controller {
     private InvalidationListener songSliderInvalidationListener;
     private InvalidationListener volumeSliderInvalidationListener;
 
-    //TODO: We should separate play function for both playlists and single track;
 
+    private void play (int index) {
+        currentTrack = currentPlayList.get(index);
+        currentTrack.getPlayer().play();
+        currentTrack.getPlayer().setOnEndOfMedia(() -> {
+            if (index + 1 < currentPlayList.size()) {
+                play (index + 1 );
+            } else {
+                currentTrack.getPlayer().stop();
+            }
+            disposeCurrent();
+            pauseButton.setVisible(false);
+            playButton.setVisible(true);
+            playButton.requestFocus();
+        });
+    }
     private void playClick() {
+
+        if (selected.size() == 0) return;
+        else {
+            for (TrackView temp :  views) {
+                if (selected.contains(temp)) {
+                    currentPlayList.add(temp.getTrack());
+                }
+            }
+        }
+
+        play (0);
+
+        pauseButton.setVisible(true);
+        pauseButton.requestFocus();
+        playButton.setVisible(false);
 
         /**
          *  TODO: songSlider controller should be defined here as it's different to each track.
          *  TODO: setSlider max value at tracks duration in seconds;
          *  TODO: add Volume control and listener for volumeSlider;
          */
-        sliderValueUpdater = (observable, oldValue, newValue) -> {
-            //what to do when track's time changing? Adjust slider value;
-        };
-        songSliderInvalidationListener = observable -> {
-            //What to do when user is moving songSlider?
-            //currentTrack.getPlayer().seek();
-        };
-        songSlider.valueProperty().addListener(songSliderInvalidationListener);
 
-        volumeSliderInvalidationListener = observable -> {
-            //What to do when volume Slider value were changed?
-        };
-        volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
-
-        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
-
-        currentTrack.getPlayer().play();
 
 
     }
