@@ -2,6 +2,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -72,17 +73,7 @@ public class Controller {
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
-        track.getPlayer().setOnReady(() -> {
-            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
-            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
 
-            if (track.getMedia().getMetadata().get("album") == null) {
-                track.albumProperty().set("Unknown Album");
-            } else {
-                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
-            }
-
-        });
 
 
         ContextMenu menu = new ContextMenu();
@@ -146,8 +137,17 @@ public class Controller {
 
             }
         });
+
+
+        ImageView image = new ImageView();
+        image.setFitHeight(60);
+        image.setFitWidth(60);
+        image.setLayoutX(0);
+        image.setLayoutY(0);
+        view.getView().getChildren().add(image);
+
         Label metadata = new Label();
-        metadata.setLayoutX(20);
+        metadata.setLayoutX(100);
         metadata.setLayoutY(5);
         metadata.setId("label");
         metadata.setMaxWidth(200);
@@ -172,6 +172,21 @@ public class Controller {
         metadata.textProperty().bind(track.albumProperty());
         view.getView().getChildren().add(metadata);
         view.getView().applyCss();
+
+        track.getPlayer().setOnReady(() -> {
+            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
+            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
+            Image img = (Image) track.getPlayer().getMedia().getMetadata().get("image");
+            if (img != null) image.setImage(img);
+            else image.setImage(track.getImage());
+            if (track.getMedia().getMetadata().get("album") == null) {
+                track.albumProperty().set("Unknown Album");
+            } else {
+                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
+            }
+
+        });
+
         viewContainer.getChildren().add(view.getView());
         views.add(view);
 
@@ -201,6 +216,7 @@ public class Controller {
             }
         });
 
+        currentPlayList = new ArrayList<>();
         /**
          *  Song slider init
          */
@@ -268,7 +284,7 @@ public class Controller {
         currentTrack.getPlayer().play();
         currentTrack.getPlayer().setOnEndOfMedia(() -> {
             if (index + 1 < currentPlayList.size()) {
-                play (index + 1 );
+                play(index + 1);
             } else {
                 currentTrack.getPlayer().stop();
             }
@@ -277,24 +293,6 @@ public class Controller {
             playButton.setVisible(true);
             playButton.requestFocus();
         });
-
-        sliderValueUpdater = (observable, oldValue, newValue) -> {
-            //what to do when track's time changing? Adjust slider value;
-        };
-        songSliderInvalidationListener = observable -> {
-            //What to do when user is moving songSlider?
-            //currentTrack.getPlayer().seek();
-        };
-        songSlider.valueProperty().addListener(songSliderInvalidationListener);
-
-        volumeSliderInvalidationListener = observable -> {
-            //What to do when volume Slider value were changed?
-        };
-        volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
-
-        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
-
-        //currentTrack.getPlayer().play();
     }
 
     //TODO: We should separate play function for both playlists and single track;
