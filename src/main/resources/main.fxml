@@ -30,7 +30,7 @@
     <ProgressBar id="songBar" fx:id="songBar" layoutX="16.0" layoutY="497.0" prefHeight="14.0" prefWidth="569.0" progress="0.5" />
     <Slider id="songSlider" fx:id="songSlider" layoutX="16.0" layoutY="497.0" prefHeight="14.0" prefWidth="569.0" />
 
-    <ProgressBar id="volumeBar" layoutX="480.0" layoutY="543.0" prefHeight="5.0" prefWidth="100.0" progress="25" />
+    <ProgressBar fx:id="volumeBar" id="volumeBar" layoutX="480.0" layoutY="543.0" prefHeight="5.0" prefWidth="100.0" progress="25" />
      <Slider fx:id="volumeSlider" layoutX="480.0" layoutY="515.0" prefHeight="76.0" prefWidth="100.0" value="100" />
 
     <ImageView id="volumeControl" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="420" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
@@ -58,7 +58,7 @@
       <Label fx:id="timeElapsed" layoutX="16.0" layoutY="471.0" text="0:00" />
       <Label fx:id="timeTotal" layoutX="200.0" layoutY="471.0" text="0:00" />
 
-                 <ListView fx:id="list" layoutX="265.0" layoutY="292.0" prefHeight="180.0" prefWidth="275.0" />
+
 
 
 
