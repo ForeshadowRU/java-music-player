@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -104,15 +105,26 @@ public class Controller {
                 }
                 if (event.getButton() == MouseButton.PRIMARY)
                 {
-                    selected.add(view);
-                    view.getView().setId("selectedNode");
-
                     if (event.getClickCount() == 2)
                     {
+                        selected.clear();
+                        selected.add(view);
                         if (currentTrack != null) currentTrack.stop();
                         currentTrack = view.getTrack();
                         playClick();
+                    }else
+                    if (selected.contains(view))
+                    {
+                        selected.remove(view);
+                        view.getView().setId("libNode");
                     }
+                    else {
+                        selected.add(view);
+                        view.getView().setId("selectedNode");
+                    }
+
+
+
 
                 }
             }
@@ -146,14 +158,28 @@ public class Controller {
 
     }
 
-
+    private void clearSelected()
+    {
+        for (TrackView sel : selected)
+        {
+            sel.getView().setId("libNode");
+        }
+    }
     @FXML
     protected void initialize() {
         views = new ArrayList<>();
         loaded = new ArrayList<>();
         selected = new ArrayList<>();
-
-
+        pauseButton.setVisible(false);
+        pauseButton.setOnMouseClicked(event -> pauseClick());
+        playButton.setOnMouseClicked(event -> playClick());
+        pane.setOnKeyPressed(event ->
+        {
+            if (event.getCode() == KeyCode.ESCAPE)
+            {
+                clearSelected();
+            }
+        });
     }
 
     public void browseClick() {
@@ -181,8 +207,29 @@ public class Controller {
     private InvalidationListener volumeSliderInvalidationListener;
 
 
-    public void playClick() {
-        if (selected.size() > 0) return;
+    private void playClick() {
+        if (currentTrack != null) currentTrack.getPlayer().stop();
+        pauseButton.setVisible(true);
+        pauseButton.requestFocus();
+        playButton.setVisible(false);
+
+        if (selected.size() == 0) return;
+        int[] i = {0};
+        currentTrack = selected.get(i[0]).getTrack();
+        currentTrack.getPlayer().setOnEndOfMedia(() -> {
+            currentTrack = selected.get(++i[0]).getTrack();
+            currentTrack.play();
+        });
+        for (int j = 1; j < selected.size() - 1; j++)
+        {
+            selected.get(j).getTrack().getPlayer().setOnEndOfMedia(() ->
+            {
+                currentTrack = selected.get(++i[0]).getTrack();
+                currentTrack.play();
+            });
+        }
+        currentTrack.getPlayer().play();
+
 
     }
 
@@ -198,7 +245,7 @@ public class Controller {
         playButton.setVisible(true);
         pauseButton.setVisible(false);
         playButton.requestFocus();
-        //currentTrack.pause();
+        currentTrack.pause();
     }
 
 }
