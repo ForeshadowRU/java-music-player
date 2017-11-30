@@ -57,8 +57,8 @@ public class Controller {
          */
         double VIEW_HEIGHT = 60;
         double VIEW_WIDTH = 500;
+        double UNSELECTED_Y = 10;
         double UNSELECTED_X = 50;
-        double UNSELECTED_Y_OFFSET = 10;
         double SELECTED_X = 20;
 //------------------------------------------------------------------
 
@@ -70,8 +70,7 @@ public class Controller {
         if (views.size() == 0)
             view.getView().setLayoutY(10);
         else
-            view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y_OFFSET + UNSELECTED_Y_OFFSET);
-
+            view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
         track.getPlayer().setOnReady(() -> {
             track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
@@ -93,8 +92,8 @@ public class Controller {
         menu.getItems().add(deleteItem);
 
         /**TODO: Write selection logic here.
-         * Single Click: select only clicked.
-         * Double Click: play only clicked;
+         * Single Click: select only clicked. +
+         * Double Click: play only clicked; +
          * Single Click on Selected: do nothing;
          * Single Click with Shift Pressed: add clicked to selection;
          * Single Click with Shift Pressed on Selected: remove clicked from selection;
@@ -103,6 +102,46 @@ public class Controller {
          * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
          *
          */
+
+        view.getView().setOnMousePressed(event -> {
+            Alert kek = new Alert(Alert.AlertType.INFORMATION);
+            kek.setTitle("info");
+            if ((event.getClickCount() == 2) && (event.getButton() == MouseButton.PRIMARY)) {
+                for (TrackView temp : views) {
+                    if (temp.getView().getId() == "selectedNode") {
+                        selected.remove(temp);
+                        temp.getView().setId("unselectedNode");
+                        temp.getView().setLayoutX(UNSELECTED_X);
+                    }
+                }
+                view.getView().setId("selectedNode");
+                selected.add(view);
+                view.getView().setLayoutX(SELECTED_X);
+                playClick();
+            } else {
+                if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
+                    selected.add(view);
+                    view.getView().setLayoutX(SELECTED_X);
+                    view.getView().setId("selectedNode");
+                } else {
+                    for (TrackView temp : views) {
+                        if (temp.getView().getId() == "selectedNode") {
+                            selected.remove(temp);
+                            temp.getView().setId("unselectedNode");
+                            temp.getView().setLayoutX(UNSELECTED_X);
+                        }
+                    }
+                    if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+                        selected.add(view);
+                        view.getView().setLayoutX(SELECTED_X);
+                        view.getView().setId("selectedNode");
+                    }
+                }
+            }
+            kek.setContentText(Integer.toString(selected.size()));
+            //kek.show();
+        });
+
         view.getView().setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 if (event.isShiftDown()) {
@@ -142,9 +181,15 @@ public class Controller {
 
     }
 
+//Example
+    /*for (TrackView temp : views) {
+        if (temp.getView().getId() == "selectedNode") {
+            selected.remove(temp);
+            temp.getView().setId("unselectedNode");
+        }
+    }*/
     private void clearSelected() {
         for (TrackView sel : selected) {
-            sel.getTrack().getPlayer().setOnEndOfMedia(() -> sel.getTrack().getPlayer().stop());
             sel.getView().setId("unselectedNode");
         }
         selected.clear();
@@ -186,14 +231,12 @@ public class Controller {
         for (File file : directory.listFiles()) {
             if (file.isDirectory()) searchForMp3(file);
             else {
-
                 if (file.getName().endsWith(".mp3")) {
                     output.add(file);
                 }
             }
         }
         parse(output);
-
     }
 
 
@@ -210,7 +253,6 @@ public class Controller {
     }
 
     public void parse(List<File> files) {
-
         for (File selectedFile : files) {
             Track selectedTrack = new Track(selectedFile);
             addView(selectedTrack);
@@ -246,21 +288,6 @@ public class Controller {
         pauseButton.requestFocus();
         playButton.setVisible(false);
 
-
-        int[] i = {0};
-        currentTrack = selected.get(i[0]).getTrack();
-        currentTrack.getPlayer().setOnEndOfMedia(() -> {
-            currentTrack = selected.get(++i[0]).getTrack();
-            currentTrack.play();
-        });
-        for (int j = 1; j < selected.size() - 1; j++)
-        {
-            selected.get(j).getTrack().getPlayer().setOnEndOfMedia(() ->
-            {
-                currentTrack = selected.get(++i[0]).getTrack();
-                currentTrack.play();
-            });
-        }
         /**
          *  TODO: songSlider controller should be defined here as it's different to each track.
          *  TODO: setSlider max value at tracks duration in seconds;
