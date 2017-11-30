@@ -185,8 +185,17 @@ public class Controller {
         view.getView().applyCss();
 
         track.getPlayer().setOnReady(() -> {
-            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
-            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
+            if (track.getMedia().getMetadata().get("title") == null)
+                track.titleProperty().set("Unknown Title");
+            else
+                track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
+
+            if (track.getMedia().getMetadata().get("artist") == null)
+                track.artistProperty().set("Unknown Artist");
+            else
+                track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
+
+
             Image img = (Image) track.getPlayer().getMedia().getMetadata().get("image");
             if (img != null) image.setImage(img);
             else image.setImage(track.getImage());
