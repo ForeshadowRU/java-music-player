@@ -2,6 +2,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -72,17 +73,7 @@ public class Controller {
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
-        track.getPlayer().setOnReady(() -> {
-            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
-            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
 
-            if (track.getMedia().getMetadata().get("album") == null) {
-                track.albumProperty().set("Unknown Album");
-            } else {
-                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
-            }
-
-        });
 
 
         ContextMenu menu = new ContextMenu();
@@ -150,8 +141,17 @@ public class Controller {
 
             }
         });
+
+
+        ImageView image = new ImageView();
+        image.setFitHeight(60);
+        image.setFitWidth(60);
+        image.setLayoutX(0);
+        image.setLayoutY(0);
+        view.getView().getChildren().add(image);
+
         Label metadata = new Label();
-        metadata.setLayoutX(20);
+        metadata.setLayoutX(100);
         metadata.setLayoutY(5);
         metadata.setId("label");
         metadata.setMaxWidth(200);
@@ -176,18 +176,27 @@ public class Controller {
         metadata.textProperty().bind(track.albumProperty());
         view.getView().getChildren().add(metadata);
         view.getView().applyCss();
+
+        track.getPlayer().setOnReady(() -> {
+            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
+            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
+            Image img = (Image) track.getPlayer().getMedia().getMetadata().get("image");
+            if (img != null) image.setImage(img);
+            else image.setImage(track.getImage());
+            if (track.getMedia().getMetadata().get("album") == null) {
+                track.albumProperty().set("Unknown Album");
+            } else {
+                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
+            }
+
+        });
+
         viewContainer.getChildren().add(view.getView());
         views.add(view);
 
     }
 
-//Example
-    /*for (TrackView temp : views) {
-        if (temp.getView().getId() == "selectedNode") {
-            selected.remove(temp);
-            temp.getView().setId("unselectedNode");
-        }
-    }*/
+
     private void clearSelected() {
         for (TrackView sel : selected) {
             sel.getView().setId("unselectedNode");
@@ -212,6 +221,7 @@ public class Controller {
             }
         });
 
+        currentPlayList = new ArrayList<>();
         /**
          *  Song slider init
          */
@@ -277,16 +287,8 @@ public class Controller {
     private InvalidationListener volumeSliderInvalidationListener;
 
     //TODO: We should separate play function for both playlists and single track;
-    private void playClick() {
 
-        if (currentTrack != null) {
-            currentTrack.getPlayer().stop();
-            disposeCurrent();
-        }
-        if (selected.size() == 0) return;
-        pauseButton.setVisible(true);
-        pauseButton.requestFocus();
-        playButton.setVisible(false);
+    private void playClick() {
 
         /**
          *  TODO: songSlider controller should be defined here as it's different to each track.

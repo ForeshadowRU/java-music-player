@@ -1,4 +1,5 @@
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -13,6 +14,22 @@ public class Track {
     private SimpleStringProperty artist;
     private SimpleStringProperty title;
     private SimpleStringProperty album;
+    private Image image;
+
+    public Track(File source) {
+
+        artist = new SimpleStringProperty();
+        album = new SimpleStringProperty();
+        title = new SimpleStringProperty();
+        this.source = source;
+        media = new Media(source.toURI().toString());
+        player = new MediaPlayer(media);
+        image = new Image(getClass().getResource("img/tmp/missing.png").toString());
+    }
+
+    public Image getImage() {
+        return image;
+    }
 
     public String getArtist() {
         return artist.get();
@@ -85,14 +102,8 @@ public class Track {
         return result;
     }
 
-    public Track(File source) {
-
-        artist = new SimpleStringProperty();
-        album = new SimpleStringProperty();
-        title = new SimpleStringProperty();
-        this.source = source;
-        media = new Media(source.toURI().toString());
-        player = new MediaPlayer(media);
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     @Override
