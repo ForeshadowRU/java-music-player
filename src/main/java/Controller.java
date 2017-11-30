@@ -47,7 +47,7 @@ public class Controller {
 
     private ArrayList<TrackView> selected;
 
-    private List<Track> currentPlayList;
+    private List<TrackView> currentPlayList;
 
     private Track currentTrack;
 
@@ -305,7 +305,7 @@ public class Controller {
     private void play (int index) {
         songSlider.setDisable(false);
 
-        currentTrack = currentPlayList.get(index);
+        currentTrack = currentPlayList.get(index).getTrack();
         currentTrack.getPlayer().play();
         currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
         currentTrack.getPlayer().setOnEndOfMedia(() -> {
@@ -340,15 +340,14 @@ public class Controller {
     private void playClick() {
 
         if (selected.size() == 0) return;
-        else {
-            for (TrackView temp :  views) {
-                if (selected.contains(temp)) {
-                    currentPlayList.add(temp.getTrack());
-                }
-            }
+        if (!selected.equals(currentPlayList)) {
+            currentPlayList.clear();
+            if (currentTrack != null) currentTrack.stop();
+            currentPlayList = (List<TrackView>) selected.clone();
         }
 
-        play (0);
+
+        play(0);
 
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
@@ -364,6 +363,7 @@ public class Controller {
             songSlider.valueProperty().removeListener(songSliderInvalidationListener);
         if (currentTrack != null && volumeSliderInvalidationListener != null)
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
+        if (currentTrack != null) currentTrack.getPlayer().setOnEndOfMedia(null);
     }
 
 
