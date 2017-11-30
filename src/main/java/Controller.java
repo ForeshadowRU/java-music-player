@@ -2,6 +2,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -72,17 +73,7 @@ public class Controller {
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
-        track.getPlayer().setOnReady(() -> {
-            track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
-            track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
 
-            if (track.getMedia().getMetadata().get("album") == null) {
-                track.albumProperty().set("Unknown Album");
-            } else {
-                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
-            }
-
-        });
 
 
         ContextMenu menu = new ContextMenu();
@@ -146,18 +137,34 @@ public class Controller {
 
             }
         });
+
+
+        ImageView image = new ImageView();
+        image.setFitHeight(60);
+        image.setFitWidth(60);
+        image.setLayoutX(0);
+        image.setLayoutY(0);
+        view.getView().getChildren().add(image);
+
         Label metadata = new Label();
-        metadata.setLayoutX(20);
+        metadata.setLayoutX(100);
         metadata.setLayoutY(5);
         metadata.setId("label");
         metadata.setMaxWidth(200);
         view.getView().getChildren().add(metadata);
         metadata.textProperty().bind(track.artistProperty());
 
+        Label time = new Label();
+        time.setLayoutX((VIEW_WIDTH / 100 * 80));
+        time.setLayoutY(VIEW_HEIGHT - 25);
+        time.setId("label");
+        time.setMaxWidth(80);
+
+        view.getView().getChildren().add(time);
 
         metadata = new Label();
         metadata.setLayoutX((VIEW_WIDTH / 100 * 65));
-        metadata.setLayoutY(10);
+        metadata.setLayoutY(5);
         metadata.setId("label");
         metadata.setMaxWidth(200);
         metadata.textProperty().bind(track.titleProperty());
@@ -172,11 +179,34 @@ public class Controller {
         metadata.textProperty().bind(track.albumProperty());
         view.getView().getChildren().add(metadata);
         view.getView().applyCss();
+
+        track.getPlayer().setOnReady(() -> {
+            if (track.getMedia().getMetadata().get("title") == null)
+                track.titleProperty().set("Unknown Title");
+            else
+                track.titleProperty().set(track.getMedia().getMetadata().get("title").toString());
+
+            if (track.getMedia().getMetadata().get("artist") == null)
+                track.artistProperty().set("Unknown Artist");
+            else
+                track.artistProperty().set(track.getMedia().getMetadata().get("artist").toString());
+
+
+            Image img = (Image) track.getPlayer().getMedia().getMetadata().get("image");
+            if (img != null) image.setImage(img);
+            else image.setImage(track.getImage());
+            if (track.getMedia().getMetadata().get("album") == null) {
+                track.albumProperty().set("Unknown Album");
+            } else {
+                track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
+            }
+            time.setText(timeFormat(track.getMedia().getDuration()));
+        });
+
         viewContainer.getChildren().add(view.getView());
         views.add(view);
 
     }
-
     private void clearSelected() {
         for (TrackView sel : selected) {
             sel.getView().setId("unselectedNode");
@@ -201,6 +231,7 @@ public class Controller {
             }
         });
 
+        currentPlayList = new ArrayList<>();
         /**
          *  Song slider init
          */
@@ -263,6 +294,7 @@ public class Controller {
     private InvalidationListener songSliderInvalidationListener;
     private InvalidationListener volumeSliderInvalidationListener;
 
+
     private void play (int index) {
         currentTrack = currentPlayList.get(index);
         currentTrack.getPlayer().play();
@@ -277,27 +309,7 @@ public class Controller {
             playButton.setVisible(true);
             playButton.requestFocus();
         });
-
-        sliderValueUpdater = (observable, oldValue, newValue) -> {
-            //what to do when track's time changing? Adjust slider value;
-        };
-        songSliderInvalidationListener = observable -> {
-            //What to do when user is moving songSlider?
-            //currentTrack.getPlayer().seek();
-        };
-        songSlider.valueProperty().addListener(songSliderInvalidationListener);
-
-        volumeSliderInvalidationListener = observable -> {
-            //What to do when volume Slider value were changed?
-        };
-        volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
-
-        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
-
-        //currentTrack.getPlayer().play();
     }
-
-    //TODO: We should separate play function for both playlists and single track;
     private void playClick() {
 
         if (selected.size() == 0) return;
@@ -335,6 +347,14 @@ public class Controller {
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
     }
 
+
+    private String timeFormat(Duration duration) {
+        int minutes = (int) duration.toMinutes();
+        int seconds = (int) duration.toSeconds() - minutes * 60;
+        if (seconds < 10) return Integer.toString(minutes).concat(":0").concat(Integer.toString(seconds));
+        else return Integer.toString(minutes).concat(":").concat(Integer.toString(seconds));
+
+    }
 
     public void pauseClick() {
         playButton.setVisible(true);
