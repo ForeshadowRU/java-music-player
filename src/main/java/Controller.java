@@ -214,40 +214,7 @@ public class Controller {
         selected.clear();
     }
 
-    @FXML
-    protected void initialize() {
-        currentPlayList = new ArrayList<>();
-        views = new ArrayList<>();
-        selected = new ArrayList<>();
-
-        pauseButton.setVisible(false);
-        pauseButton.setOnMouseClicked(event -> pauseClick());
-        playButton.setOnMouseClicked(event -> playClick());
-
-        pane.setOnKeyPressed(event ->
-        {
-            if (event.getCode() == KeyCode.ESCAPE) {
-                clearSelected();
-            }
-        });
-
-        currentPlayList = new ArrayList<>();
-
-        songSlider.setMin(0);
-        songSlider.setBlockIncrement(1);
-        songSlider.setMax(100);
-        songSlider.setValue(0);
-        songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getMax() / songSlider.getValue()));
-        songSlider.setDisable(true);
-
-        volumeSlider.setMin(0);
-        volumeSlider.setMax(100);
-        volumeSlider.setValue(30);
-        volumeBar.setProgress(0.3);
-        volumeSlider.setBlockIncrement(1);
-        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
-
-    }
+    private InvalidationListener songBarSliderSync;
 
     private void searchForMp3(File directory) {
         if (!directory.isDirectory() || directory.listFiles() == null) return;
@@ -301,6 +268,40 @@ public class Controller {
     private InvalidationListener songSliderInvalidationListener;
     private InvalidationListener volumeSliderInvalidationListener;
 
+    @FXML
+    protected void initialize() {
+        currentPlayList = new ArrayList<>();
+        views = new ArrayList<>();
+        selected = new ArrayList<>();
+
+        pauseButton.setVisible(false);
+        pauseButton.setOnMouseClicked(event -> pauseClick());
+        playButton.setOnMouseClicked(event -> playClick());
+
+        pane.setOnKeyPressed(event ->
+        {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                clearSelected();
+            }
+        });
+
+        currentPlayList = new ArrayList<>();
+
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
+        songSlider.setMax(100);
+        songSlider.setValue(0);
+        songBar.setProgress(0);
+        songSlider.setDisable(true);
+
+        volumeSlider.setMin(0);
+        volumeSlider.setMax(100);
+        volumeSlider.setValue(30);
+        volumeBar.setProgress(0.3);
+        volumeSlider.setBlockIncrement(1);
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
+
+    }
 
     private void play (int index) {
         songSlider.setDisable(false);
@@ -320,6 +321,13 @@ public class Controller {
         songSlider.setMax((int) currentTrack.getPlayer().getMedia().getDuration().toSeconds());
         songSlider.setMin(0);
         songSlider.setBlockIncrement(1);
+
+        songBarSliderSync = observable ->
+        {
+            songBar.setProgress(songSlider.getValue() / songSlider.getMax());
+
+        };
+        songSlider.valueProperty().addListener(songBarSliderSync);
 
         sliderValueUpdater = (observable, oldValue, newValue) -> {
             songSlider.setValue((int) currentTrack.getPlayer().getCurrentTime().toSeconds());
@@ -364,6 +372,8 @@ public class Controller {
         if (currentTrack != null && volumeSliderInvalidationListener != null)
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
         if (currentTrack != null) currentTrack.getPlayer().setOnEndOfMedia(null);
+        if (currentTrack != null) songSlider.valueProperty().removeListener(songBarSliderSync);
+
     }
 
 
