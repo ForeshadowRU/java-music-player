@@ -7,6 +7,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -63,13 +64,13 @@ public class Controller {
 
 
         TrackView view = new TrackView(track);
-        view.getView().setPrefSize(VIEW_WIDTH,VIEW_HEIGHT);
+        view.getView().setPrefSize(VIEW_WIDTH, VIEW_HEIGHT);
         view.getView().setId("unselectedNode");
         view.getView().setLayoutX(UNSELECTED_X);
         if (views.size() == 0)
             view.getView().setLayoutY(10);
         else
-           view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * 10 + 10);
+            view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y_OFFSET + UNSELECTED_Y_OFFSET);
 
 
         track.getPlayer().setOnReady(() -> {
@@ -78,7 +79,7 @@ public class Controller {
 
             if (track.getMedia().getMetadata().get("album") == null) {
                 track.albumProperty().set("Unknown Album");
-            }else {
+            } else {
                 track.albumProperty().set(track.getMedia().getMetadata().get("album").toString());
             }
 
@@ -120,7 +121,8 @@ public class Controller {
 
 
         metadata = new Label();
-        metadata.setLayoutX((VIEW_WIDTH / 100 * 65)); metadata.setLayoutY(10);
+        metadata.setLayoutX((VIEW_WIDTH / 100 * 65));
+        metadata.setLayoutY(10);
         metadata.setId("label");
         metadata.setMaxWidth(200);
         metadata.textProperty().bind(track.titleProperty());
@@ -128,7 +130,8 @@ public class Controller {
 
 
         metadata = new Label();
-        metadata.setLayoutX(100); metadata.setLayoutY(30);
+        metadata.setLayoutX(100);
+        metadata.setLayoutY(30);
         metadata.setId("label");
         metadata.setMaxWidth(200);
         metadata.textProperty().bind(track.albumProperty());
@@ -139,15 +142,14 @@ public class Controller {
 
     }
 
-    private void clearSelected()
-    {
-        for (TrackView sel : selected)
-        {
+    private void clearSelected() {
+        for (TrackView sel : selected) {
             sel.getTrack().getPlayer().setOnEndOfMedia(() -> sel.getTrack().getPlayer().stop());
             sel.getView().setId("unselectedNode");
         }
         selected.clear();
     }
+
     @FXML
     protected void initialize() {
         currentPlayList = new ArrayList<>();
@@ -160,8 +162,7 @@ public class Controller {
 
         pane.setOnKeyPressed(event ->
         {
-            if (event.getCode() == KeyCode.ESCAPE)
-            {
+            if (event.getCode() == KeyCode.ESCAPE) {
                 clearSelected();
             }
         });
@@ -176,27 +177,57 @@ public class Controller {
         songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getValue()));
 
 
+    }
 
+    private void searchForMp3(File directory) {
+        if (!directory.isDirectory() || directory.listFiles() == null) return;
+        List<File> output = new ArrayList<>();
+
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) searchForMp3(file);
+            else {
+
+                if (file.getName().endsWith(".mp3")) {
+                    output.add(file);
+                }
+            }
+        }
+        parse(output);
 
     }
 
-    public void browseClick() {
 
+    @SuppressWarnings("ConstantConditions")
+    public void browseFolderClick() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setInitialDirectory(new File(System.getProperty("user.home").concat("/Music")));
+        chooser.setTitle("Choose folder for search");
+        File selected = chooser.showDialog(pane.getScene().getWindow());
+        if (selected == null || selected.listFiles() == null) return;
+
+        searchForMp3(selected);
+
+    }
+
+    public void parse(List<File> files) {
+
+        for (File selectedFile : files) {
+            Track selectedTrack = new Track(selectedFile);
+            addView(selectedTrack);
+        }
+    }
+
+    public void browseClick() {
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
+        browser.setInitialDirectory(new File(System.getProperty("user.home") + "/Desktop"));
         FileChooser.ExtensionFilter mp3Filter = new FileChooser.ExtensionFilter("MP3 (*.mp3)", "*.mp3");
         FileChooser.ExtensionFilter wavFilter = new FileChooser.ExtensionFilter("Wav (*.wav)", "*.wav");
         browser.getExtensionFilters().add(mp3Filter);
         browser.getExtensionFilters().add(wavFilter);
         List<File> selected = browser.showOpenMultipleDialog(pane.getScene().getWindow());
         if (selected == null) return;
-
-        for(File selectedFile : selected)
-        {
-            Track selectedTrack = new Track(selectedFile);
-            addView(selectedTrack);
-        }
-
+        parse(selected);
     }
 
     private ChangeListener<Duration> sliderValueUpdater;
@@ -210,11 +241,12 @@ public class Controller {
             currentTrack.getPlayer().stop();
             disposeCurrent();
         }
+        if (selected.size() == 0) return;
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
 
-        if (selected.size() == 0) return;
+
         int[] i = {0};
         currentTrack = selected.get(i[0]).getTrack();
         currentTrack.getPlayer().setOnEndOfMedia(() -> {
