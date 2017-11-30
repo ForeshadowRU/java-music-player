@@ -309,7 +309,6 @@ public class Controller {
 
         play (0);
 
-
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
