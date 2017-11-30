@@ -72,8 +72,6 @@ public class Controller {
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
 
-
-
         ContextMenu menu = new ContextMenu();
         MenuItem deleteItem = new MenuItem();
         deleteItem.setText("Delete");
@@ -121,7 +119,6 @@ public class Controller {
                 }
             }
         });
-
 
         ImageView image = new ImageView();
         image.setFitHeight(60);
@@ -218,14 +215,21 @@ public class Controller {
         });
 
         currentPlayList = new ArrayList<>();
-        /**
-         *  Song slider init
-         */
-        songSlider.setDisable(true);
+
         songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
         songSlider.setMax(100);
         songSlider.setValue(0);
-        songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getValue()));
+        songSlider.valueProperty().addListener(ov -> songBar.setProgress(songSlider.getMax() / songSlider.getValue()));
+        songSlider.setDisable(true);
+
+        volumeSlider.setMin(0);
+        volumeSlider.setMax(100);
+        volumeSlider.setValue(30);
+        volumeBar.setProgress(0.3);
+        volumeSlider.setBlockIncrement(1);
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
+
     }
 
     private void searchForMp3(File directory) {
@@ -281,9 +285,12 @@ public class Controller {
     private InvalidationListener volumeSliderInvalidationListener;
 
     private void play (int index) {
+        songSlider.setDisable(false);
+
         currentTrack = currentPlayList.get(index);
         currentTrack.getPlayer().seek(Duration.ZERO);
         currentTrack.getPlayer().play();
+        currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
         currentTrack.getPlayer().setOnEndOfMedia(() -> {
             if (index + 1 < currentPlayList.size()) {
                 play(index + 1);
@@ -294,9 +301,25 @@ public class Controller {
             }
             disposeCurrent();
         });
-    }
+        songSlider.setMax((int) currentTrack.getPlayer().getMedia().getDuration().toSeconds());
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
 
-    //TODO: We should separate play function for both playlists and single track;
+        sliderValueUpdater = (observable, oldValue, newValue) -> {
+            songSlider.setValue((int) currentTrack.getPlayer().getCurrentTime().toSeconds());
+        };
+        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
+
+        songSliderInvalidationListener = observable -> {
+            if (songSlider.isValueChanging()) {
+                currentTrack.getPlayer().seek(Duration.seconds((int) (songSlider.getValue())));
+            }
+        };
+        songSlider.valueProperty().addListener(songSliderInvalidationListener);
+
+        volumeSliderInvalidationListener = observable -> currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
+        volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
+    }
     private void playClick() {
         if (selected.size() == 0) return;
         else {
@@ -312,12 +335,6 @@ public class Controller {
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
-
-        /**
-         *  TODO: songSlider controller should be defined here as it's different to each track.
-         *  TODO: setSlider max value at tracks duration in seconds;
-         *  TODO: add Volume control and listener for volumeSlider;
-         */
     }
 
     public void disposeCurrent() {
