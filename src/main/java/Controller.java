@@ -49,7 +49,7 @@ public class Controller {
 
     private List<TrackView> currentPlayList;
 
-    private Track currentTrack;
+    private TrackView currentTrack;
 
     //------------------------------------------------------------------
     /** Use this var's for offset's control
@@ -161,6 +161,7 @@ public class Controller {
         view.getView().getChildren().add(metadata);
         view.getView().applyCss();
 
+
         track.getPlayer().setOnReady(() -> {
             if (track.getMedia().getMetadata().get("title") == null)
                 track.titleProperty().set("Unknown Title");
@@ -198,6 +199,36 @@ public class Controller {
         selected.clear();
     }
     private InvalidationListener songBarSliderSync;
+
+    private void forwardClick() {
+        if (currentTrack != null) {
+            int index = currentPlayList.indexOf(currentTrack) + 1;
+            currentTrack.getTrack().stop();
+            disposeCurrent();
+            if (index < currentPlayList.size()) {
+                play(index);
+            } else {
+                pauseButton.setVisible(false);
+                playButton.setVisible(true);
+            }
+        }
+        // TODO implement repeat mechanism
+    }
+
+    private void backwardClick() {
+        if (currentTrack != null) {
+            int index = currentPlayList.indexOf(currentTrack) - 1;
+            currentTrack.getTrack().stop();
+            disposeCurrent();
+            if (index >= 0) {
+                play(index);
+            } else {
+                pauseButton.setVisible(false);
+                playButton.setVisible(true);
+            }
+        }
+        // TODO implement repeat mechanism
+    }
 
 
     private void searchForMp3(File directory) {
@@ -262,6 +293,8 @@ public class Controller {
         pauseButton.setVisible(false);
         pauseButton.setOnMouseClicked(event -> pauseClick());
         playButton.setOnMouseClicked(event -> playClick());
+        forwardButton.setOnMouseClicked(event -> forwardClick());
+        backwardButton.setOnMouseClicked((event -> backwardClick()));
 
         pane.setOnKeyPressed(event ->
         {
@@ -289,21 +322,21 @@ public class Controller {
     }
     private void play (int index) {
         songSlider.setDisable(false);
-        currentTrack = currentPlayList.get(index).getTrack();
-        currentTrack.getPlayer().play();
-        currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
-        currentTrack.getPlayer().setOnEndOfMedia(() -> {
+        currentTrack = currentPlayList.get(index);
+        currentTrack.getTrack().getPlayer().play();
+        currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
+        currentTrack.getTrack().getPlayer().setOnEndOfMedia(() -> {
             if (index + 1 < currentPlayList.size()) {
                 play(index + 1);
             } else {
-                currentTrack.getPlayer().stop();
+                currentTrack.getTrack().getPlayer().stop();
                 pauseButton.setVisible(false);
                 playButton.setVisible(true);
             }
             disposeCurrent();
         });
         songSlider.setMin(0);
-        songSlider.setMax((int) currentTrack.getPlayer().getMedia().getDuration().toSeconds());
+        songSlider.setMax((int) currentTrack.getTrack().getPlayer().getMedia().getDuration().toSeconds());
 
         songSlider.setBlockIncrement(1);
 
@@ -316,25 +349,25 @@ public class Controller {
         songSlider.valueProperty().addListener(songBarSliderSync);
 
         sliderValueUpdater = (observable, oldValue, newValue) -> {
-            songSlider.setValue((int) currentTrack.getPlayer().getCurrentTime().toSeconds());
+            songSlider.setValue((int) currentTrack.getTrack().getPlayer().getCurrentTime().toSeconds());
         };
-        currentTrack.getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
+        currentTrack.getTrack().getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
 
         songSliderInvalidationListener = observable -> {
             if (songSlider.isValueChanging()) {
-                currentTrack.getPlayer().seek(Duration.seconds((int) (songSlider.getValue())));
+                currentTrack.getTrack().getPlayer().seek(Duration.seconds((int) (songSlider.getValue())));
             }
         };
         songSlider.valueProperty().addListener(songSliderInvalidationListener);
 
-        volumeSliderInvalidationListener = observable -> currentTrack.getPlayer().setVolume(volumeSlider.getValue() / 100);
+        volumeSliderInvalidationListener = observable -> currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
     }
     private void playClick() {
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {
             currentPlayList.clear();
-            if (currentTrack != null) currentTrack.stop();
+            if (currentTrack != null) currentTrack.getTrack().stop();
             currentPlayList = (List<TrackView>) selected.clone();
         }
 
@@ -348,12 +381,12 @@ public class Controller {
 
     public void disposeCurrent() {
         if (currentTrack != null && sliderValueUpdater != null)
-            currentTrack.getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
+            currentTrack.getTrack().getPlayer().currentTimeProperty().removeListener(sliderValueUpdater);
         if (currentTrack != null && songSliderInvalidationListener != null)
             songSlider.valueProperty().removeListener(songSliderInvalidationListener);
         if (currentTrack != null && volumeSliderInvalidationListener != null)
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
-        if (currentTrack != null) currentTrack.getPlayer().setOnEndOfMedia(null);
+        if (currentTrack != null) currentTrack.getTrack().getPlayer().setOnEndOfMedia(null);
         if (currentTrack != null) songSlider.valueProperty().removeListener(songBarSliderSync);
 
     }
@@ -371,6 +404,6 @@ public class Controller {
         playButton.setVisible(true);
         pauseButton.setVisible(false);
         playButton.requestFocus();
-        currentTrack.pause();
+        currentTrack.getTrack().pause();
     }
 }
