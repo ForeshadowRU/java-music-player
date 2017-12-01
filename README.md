@@ -9,6 +9,9 @@ JPlayer - музыкальный плеер, написанный на Java.
 
 #### Реализованные версии.
 ✘ Desktop-Maximized
+
 ✓ Desktop-Still
+
 ✘ Desktop-Minimal
+
 ✘ Mobile
