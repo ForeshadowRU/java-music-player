@@ -2,7 +2,8 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 <?import java.net.URL?>
 <AnchorPane id="musicControls" fx:id="pane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
     <stylesheets>
@@ -17,6 +18,7 @@
     <MenuBar layoutY="2.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <Menu text="File">
             <MenuItem mnemonicParsing="false" onAction="#browseClick" text="Add Tracks ..." />
+            <MenuItem mnemonicParsing="false" onAction="#browseFolderClick" text="Search in folder ..."/>
             <MenuItem mnemonicParsing="false" text="Close" />
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -30,7 +32,7 @@
     <ProgressBar id="songBar" fx:id="songBar" layoutX="16.0" layoutY="497.0" prefHeight="14.0" prefWidth="569.0" progress="0.5" />
     <Slider id="songSlider" fx:id="songSlider" layoutX="16.0" layoutY="497.0" prefHeight="14.0" prefWidth="569.0" />
 
-    <ProgressBar id="volumeBar" layoutX="480.0" layoutY="543.0" prefHeight="5.0" prefWidth="100.0" progress="25" />
+    <ProgressBar fx:id="volumeBar" id="volumeBar" layoutX="480.0" layoutY="543.0" prefHeight="5.0" prefWidth="100.0" progress="25" />
      <Slider fx:id="volumeSlider" layoutX="480.0" layoutY="515.0" prefHeight="76.0" prefWidth="100.0" value="100" />
 
     <ImageView id="volumeControl" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="420" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
@@ -58,7 +60,7 @@
       <Label fx:id="timeElapsed" layoutX="16.0" layoutY="471.0" text="0:00" />
       <Label fx:id="timeTotal" layoutX="200.0" layoutY="471.0" text="0:00" />
 
-                 <ListView fx:id="list" layoutX="265.0" layoutY="292.0" prefHeight="180.0" prefWidth="275.0" />
+
 
 
 

@@ -50,7 +50,7 @@
 }
 .slider .thumb
 {
-    -fx-background-color: rgb(255, 243, 243);
+    -fx-background-color: rgb(255, 148, 79);
     -fx-background-radius: 4px;
     -fx-cursor: pointer;
     -fx-pref-height: 17px;
@@ -66,7 +66,7 @@
 }
 
 
-#libNode {
+#unselectedNode {
     -fx-background-color: linear-gradient(#32a1ff, #afbce6);
     -fx-border-width: 1px;
     -fx-border-style: solid;

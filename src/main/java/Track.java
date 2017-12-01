@@ -1,24 +1,41 @@
-import java.io.File;
-
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.MapChangeListener;
+import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
+import java.io.File;
 
 public class Track {
 
     private Media media;
     private File source;
     private MediaPlayer player;
+
     private SimpleStringProperty artist;
     private SimpleStringProperty title;
     private SimpleStringProperty album;
+    private Image image;
+
+    public Track(File source) {
+
+        artist = new SimpleStringProperty();
+        album = new SimpleStringProperty();
+        title = new SimpleStringProperty();
+        this.source = source;
+        media = new Media(source.toURI().toString());
+        player = new MediaPlayer(media);
+        image = new Image(getClass().getResource("img/tmp/missing.png").toString());
+    }
+
+    public Image getImage() {
+        return image;
+    }
 
     public String getArtist() {
         return artist.get();
     }
 
-    public SimpleStringProperty artistProperty() {
+    SimpleStringProperty artistProperty() {
         return artist;
     }
 
@@ -26,7 +43,7 @@ public class Track {
         return title.get();
     }
 
-    public SimpleStringProperty titleProperty() {
+    SimpleStringProperty titleProperty() {
         return title;
     }
 
@@ -34,21 +51,11 @@ public class Track {
         return album.get();
     }
 
-    public SimpleStringProperty albumProperty() {
+    SimpleStringProperty albumProperty() {
         return album;
     }
 
-    public boolean isReady() {
-        return isReady;
-    }
-
-    public void setReady(boolean ready) {
-        isReady = ready;
-    }
-
-    boolean isReady = false;
-
-    public Media getMedia() {
+    Media getMedia() {
         return media;
     }
 
@@ -56,23 +63,24 @@ public class Track {
         return source;
     }
 
-    public MediaPlayer getPlayer()
+    MediaPlayer getPlayer()
     {
         return player;
     }
 
-    public void play()
+    void play()
     {
         player.play();
 
     }
-    public void pause()
+
+    void pause()
     {
-        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.pause();
+        player.pause();
     }
     public void stop()
     {
-        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.stop();
+        player.stop();
     }
 
 
@@ -94,14 +102,8 @@ public class Track {
         return result;
     }
 
-    public Track(File source) {
-
-        artist = new SimpleStringProperty();
-        album = new SimpleStringProperty();
-        title = new SimpleStringProperty();
-        this.source = source;
-        media = new Media(source.toURI().toString());
-        player = new MediaPlayer(media);
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     @Override
