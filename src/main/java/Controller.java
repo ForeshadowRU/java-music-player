@@ -1,9 +1,12 @@
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
@@ -90,7 +93,7 @@ public class Controller {
          *
          */
 
-        view.getView().setOnMousePressed(event -> {
+        view.getView().setOnMouseClicked(event -> {
             if (event.getButton() != MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
                 if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
                     clearSelected();
@@ -112,14 +115,9 @@ public class Controller {
                         }
                     }
                 }
-            }
-        });
+            } /*else if (event.getButton() == MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
 
-        view.getView().setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                if (event.isShiftDown()) {
-                }
-            }
+            }*/
         });
 
         ImageView image = new ImageView();
@@ -267,7 +265,7 @@ public class Controller {
     public void aboutClick() {
         Alert kek = new Alert(Alert.AlertType.INFORMATION);
         kek.setHeaderText("Authors:");
-        kek.setContentText("Макс Keeper Максутов \n Илья Jesper Красов");
+        kek.setContentText("Макс Keeper Максутов \nИлья Jesper Красов");
         kek.show();
     }
     public void browseClick() {
