@@ -81,33 +81,35 @@ public class Controller {
         /**TODO: Write selection logic here.
          * Single Click: select only clicked. +
          * Double Click: play only clicked; +
-         * Single Click on Selected: do nothing;
+         * Single Click on Selected: do nothing; +
          * Single Click with Shift Pressed: add clicked to selection;
          * Single Click with Shift Pressed on Selected: remove clicked from selection;
          * Double Click with Shift selected: play all selected;
          *
-         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
+         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode"; +
          *
          */
 
         view.getView().setOnMousePressed(event -> {
-            if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
-                clearSelected();
-                view.getView().setId("selectedNode");
-                selected.add(view);
-                view.getView().setLayoutX(SELECTED_X);
-                playClick();
-            } else {
-                if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
+            if (event.getButton() != MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
+                if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
+                    clearSelected();
+                    view.getView().setId("selectedNode");
                     selected.add(view);
                     view.getView().setLayoutX(SELECTED_X);
-                    view.getView().setId("selectedNode");
+                    playClick();
                 } else {
-                    clearSelected();
-                    if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+                    if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
                         selected.add(view);
                         view.getView().setLayoutX(SELECTED_X);
                         view.getView().setId("selectedNode");
+                    } else {
+                        clearSelected();
+                        if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+                            selected.add(view);
+                            view.getView().setLayoutX(SELECTED_X);
+                            view.getView().setId("selectedNode");
+                        }
                     }
                 }
             }
@@ -184,10 +186,8 @@ public class Controller {
             }
             time.setText(timeFormat(track.getMedia().getDuration()));
         });
-
         viewContainer.getChildren().add(view.getView());
         views.add(view);
-
     }
 
     private void clearSelected() {
@@ -230,7 +230,6 @@ public class Controller {
         // TODO implement repeat mechanism
     }
 
-
     private void searchForMp3(File directory) {
         if (!directory.isDirectory() || directory.listFiles() == null) return;
         List<File> output = new ArrayList<>();
@@ -245,7 +244,6 @@ public class Controller {
         }
         parse(output);
     }
-
 
     @SuppressWarnings("ConstantConditions")
     public void browseFolderClick() {
@@ -265,7 +263,6 @@ public class Controller {
             addView(selectedTrack);
         }
     }
-
 
     public void aboutClick() {
         Alert kek = new Alert(Alert.AlertType.INFORMATION);
@@ -330,6 +327,7 @@ public class Controller {
     private void play (int index) {
         songSlider.setDisable(false);
         currentTrack = currentPlayList.get(index);
+        currentTrack.getTrack().getPlayer().seek(Duration.seconds(0));
         currentTrack.getTrack().getPlayer().play();
         currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         currentTrack.getTrack().getPlayer().setOnEndOfMedia(() -> {
@@ -370,6 +368,7 @@ public class Controller {
         volumeSliderInvalidationListener = observable -> currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
     }
+
     private void playClick() {
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {
@@ -378,12 +377,18 @@ public class Controller {
             currentPlayList = (List<TrackView>) selected.clone();
         }
 
-
         play(0);
 
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
+    }
+
+    public void pauseClick() {
+        playButton.setVisible(true);
+        pauseButton.setVisible(false);
+        playButton.requestFocus();
+        currentTrack.getTrack().pause();
     }
 
     public void disposeCurrent() {
@@ -398,7 +403,6 @@ public class Controller {
 
     }
 
-
     private String timeFormat(Duration duration) {
         int minutes = (int) duration.toMinutes();
         int seconds = (int) duration.toSeconds() - minutes * 60;
@@ -407,10 +411,4 @@ public class Controller {
 
     }
 
-    public void pauseClick() {
-        playButton.setVisible(true);
-        pauseButton.setVisible(false);
-        playButton.requestFocus();
-        currentTrack.getTrack().pause();
-    }
 }
