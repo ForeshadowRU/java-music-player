@@ -266,6 +266,13 @@ public class Controller {
         }
     }
 
+
+    public void aboutClick() {
+        Alert kek = new Alert(Alert.AlertType.INFORMATION);
+        kek.setHeaderText("Authors:");
+        kek.setContentText("Макс Keeper Максутов \n Илья Jesper Красов");
+        kek.show();
+    }
     public void browseClick() {
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
