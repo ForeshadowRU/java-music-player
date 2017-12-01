@@ -50,7 +50,7 @@
 }
 .slider .thumb
 {
-    -fx-background-color: rgb(255, 243, 243);
+    -fx-background-color: rgb(255, 148, 79);
     -fx-background-radius: 4px;
     -fx-cursor: pointer;
     -fx-pref-height: 17px;
