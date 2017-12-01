@@ -1,6 +1,9 @@
-import java.io.File;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
+import java.io.File;
 
 public class Track {
 
@@ -8,8 +11,51 @@ public class Track {
     private File source;
     private MediaPlayer player;
 
+    private SimpleStringProperty artist;
+    private SimpleStringProperty title;
+    private SimpleStringProperty album;
+    private Image image;
 
-    public Media getMedia() {
+    public Track(File source) {
+
+        artist = new SimpleStringProperty();
+        album = new SimpleStringProperty();
+        title = new SimpleStringProperty();
+        this.source = source;
+        media = new Media(source.toURI().toString());
+        player = new MediaPlayer(media);
+        image = new Image(getClass().getResource("img/tmp/missing.png").toString());
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public String getArtist() {
+        return artist.get();
+    }
+
+    SimpleStringProperty artistProperty() {
+        return artist;
+    }
+
+    public String getTitle() {
+        return title.get();
+    }
+
+    SimpleStringProperty titleProperty() {
+        return title;
+    }
+
+    public String getAlbum() {
+        return album.get();
+    }
+
+    SimpleStringProperty albumProperty() {
+        return album;
+    }
+
+    Media getMedia() {
         return media;
     }
 
@@ -17,23 +63,24 @@ public class Track {
         return source;
     }
 
-    public MediaPlayer getPlayer()
+    MediaPlayer getPlayer()
     {
         return player;
     }
 
-    public void play()
+    void play()
     {
         player.play();
 
     }
-    public void pause()
+
+    void pause()
     {
-        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.pause();
+        player.pause();
     }
     public void stop()
     {
-        if (player.getStatus().equals(MediaPlayer.Status.PLAYING)) player.stop();
+        player.stop();
     }
 
 
@@ -55,11 +102,8 @@ public class Track {
         return result;
     }
 
-    public Track(File source) {
-
-        this.source = source;
-        media = new Media(source.toURI().toString());
-        player = new MediaPlayer(media);
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     @Override
