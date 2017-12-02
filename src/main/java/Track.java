@@ -17,7 +17,6 @@ public class Track {
     private Image image;
 
     public Track(File source) {
-
         artist = new SimpleStringProperty();
         album = new SimpleStringProperty();
         title = new SimpleStringProperty();
@@ -71,7 +70,6 @@ public class Track {
     void play()
     {
         player.play();
-
     }
 
     void pause()
@@ -90,7 +88,6 @@ public class Track {
         if (o == null || getClass() != o.getClass()) return false;
 
         Track track = (Track) o;
-
 
         return media.equals(track.media) && source.equals(track.source);
     }

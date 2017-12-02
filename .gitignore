@@ -1,5 +1,5 @@
 *.iml
-*.iml
+*.xml
 *.iws
 /target
 /out

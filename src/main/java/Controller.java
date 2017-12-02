@@ -96,7 +96,7 @@ public class Controller {
         view.getView().setOnMouseClicked(event -> {
             if (event.getButton() != MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
                 if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
-                    clearSelected();
+                    if (selected != null) clearSelected();
                     view.getView().setId("selectedNode");
                     selected.add(view);
                     view.getView().setLayoutX(SELECTED_X);
@@ -107,7 +107,7 @@ public class Controller {
                         view.getView().setLayoutX(SELECTED_X);
                         view.getView().setId("selectedNode");
                     } else {
-                        clearSelected();
+                        if ( selected != null) clearSelected();
                         if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
                             selected.add(view);
                             view.getView().setLayoutX(SELECTED_X);
@@ -243,6 +243,18 @@ public class Controller {
         parse(output);
     }
 
+    public void deleteClick() {
+        if (selected == null) return;
+        if (currentTrack != null) currentTrack.getTrack().stop();
+        for (TrackView track : selected) {
+            viewContainer.getChildren().remove(track.getView());
+            
+        }
+        currentPlayList.clear();
+        selected.clear();
+        disposeCurrent();
+    }
+
     @SuppressWarnings("ConstantConditions")
     public void browseFolderClick() {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -268,6 +280,7 @@ public class Controller {
         kek.setContentText("Макс Keeper Максутов \nИлья Jesper Красов");
         kek.show();
     }
+
     public void browseClick() {
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
@@ -370,8 +383,8 @@ public class Controller {
     private void playClick() {
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {
-            currentPlayList.clear();
             if (currentTrack != null) currentTrack.getTrack().stop();
+            currentPlayList.clear();
             currentPlayList = (List<TrackView>) selected.clone();
         }
 
@@ -398,7 +411,6 @@ public class Controller {
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
         if (currentTrack != null) currentTrack.getTrack().getPlayer().setOnEndOfMedia(null);
         if (currentTrack != null) songSlider.valueProperty().removeListener(songBarSliderSync);
-
     }
 
     private String timeFormat(Duration duration) {
@@ -406,7 +418,5 @@ public class Controller {
         int seconds = (int) duration.toSeconds() - minutes * 60;
         if (seconds < 10) return Integer.toString(minutes).concat(":0").concat(Integer.toString(seconds));
         else return Integer.toString(minutes).concat(":").concat(Integer.toString(seconds));
-
     }
-
 }
