@@ -1,4 +1,6 @@
 *.iml
+*.iml
+*.iws
 /target
 /out
-/.idea
+.idea/
