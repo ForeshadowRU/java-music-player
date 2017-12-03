@@ -1,6 +1,11 @@
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -10,9 +15,11 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +49,8 @@ public class Controller {
     public AnchorPane pane;
     @FXML
     public Pane viewContainer;
+    @FXML
+    public MenuItem settingsItem;
 
     private ArrayList<TrackView> views;
 
@@ -318,6 +327,21 @@ public class Controller {
         songSlider.setValue(0);
         songBar.setProgress(0);
         songSlider.setDisable(true);
+
+        settingsItem.graphicProperty().set(new ImageView(new Image("img/menu/settings.png")));
+        settingsItem.setOnAction(event -> {
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("settings.fxml"));
+                Stage stage = new Stage();
+                stage.setTitle("Settings");
+                stage.setScene(new Scene(root, 450, 450));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        });
 
         volumeSlider.setMin(0);
         volumeSlider.setMax(100);
