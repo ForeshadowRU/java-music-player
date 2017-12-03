@@ -1,4 +1,6 @@
 *.iml
+*.xml
+*.iws
 /target
 /out
-/.idea
+.idea/

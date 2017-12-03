@@ -1,15 +1,19 @@
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -71,51 +75,73 @@ public class Controller {
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
+        // TODO:
+        // add more MenuItem and write for them function
 
-        ContextMenu menu = new ContextMenu();
-        MenuItem deleteItem = new MenuItem();
-        deleteItem.setText("Delete");
-        deleteItem.setOnAction(event -> viewContainer.getChildren().remove(view.getView()));
-        menu.getItems().add(deleteItem);
+        final ContextMenu contextMenu = new ContextMenu();
+        MenuItem delete = new MenuItem("Delete");
+        
+        delete.setOnAction(e -> {
+            viewContainer.getChildren().remove(view.getView());
+            if (selected.contains(view)) {
+                if (currentTrack.equals(view)) {
+                    currentTrack.getTrack().stop();
+                    pauseButton.setVisible(false);
+                    playButton.setVisible(true);
+                    pauseButton.requestFocus();
+                    disposeCurrent();
+                }
+                for (int k = views.indexOf(view) + 1; k < views.size(); k++) {
+                    views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                }
+                views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+
+                currentPlayList.remove(view);
+                selected.remove(view);
+            } else {
+                for (int k = views.indexOf(view) + 1; k < views.size(); k++) {
+                    views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                }
+                views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+            }
+            views.remove(view);
+        });
+        contextMenu.getItems().addAll(delete);
+        view.getView().setOnContextMenuRequested(event -> contextMenu.show(view.getView(), event.getScreenX(), event.getScreenY()));
 
         /**TODO: Write selection logic here.
          * Single Click: select only clicked. +
          * Double Click: play only clicked; +
-         * Single Click on Selected: do nothing;
+         * Single Click on Selected: do nothing; +
          * Single Click with Shift Pressed: add clicked to selection;
          * Single Click with Shift Pressed on Selected: remove clicked from selection;
          * Double Click with Shift selected: play all selected;
          *
-         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
+         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode"; +
          *
          */
 
-        view.getView().setOnMousePressed(event -> {
-            if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
-                clearSelected();
-                view.getView().setId("selectedNode");
-                selected.add(view);
-                view.getView().setLayoutX(SELECTED_X);
-                playClick();
-            } else {
-                if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
+        view.getView().setOnMouseClicked(event -> {
+            if (event.getButton() != MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
+                if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
+                    if (selected != null) clearSelected();
+                    view.getView().setId("selectedNode");
                     selected.add(view);
                     view.getView().setLayoutX(SELECTED_X);
-                    view.getView().setId("selectedNode");
+                    playClick();
                 } else {
-                    clearSelected();
-                    if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+                    if (event.isControlDown() && (event.getButton() == MouseButton.PRIMARY)) {
                         selected.add(view);
                         view.getView().setLayoutX(SELECTED_X);
                         view.getView().setId("selectedNode");
+                    } else {
+                        if ( selected != null) clearSelected();
+                        if ((event.getButton() == MouseButton.PRIMARY) && !selected.contains(view)) {//view.getView().getId() != "selectedNode")) {
+                            selected.add(view);
+                            view.getView().setLayoutX(SELECTED_X);
+                            view.getView().setId("selectedNode");
+                        }
                     }
-                }
-            }
-        });
-
-        view.getView().setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                if (event.isShiftDown()) {
                 }
             }
         });
@@ -184,10 +210,8 @@ public class Controller {
             }
             time.setText(timeFormat(track.getMedia().getDuration()));
         });
-
         viewContainer.getChildren().add(view.getView());
         views.add(view);
-
     }
 
     private void clearSelected() {
@@ -230,7 +254,6 @@ public class Controller {
         // TODO implement repeat mechanism
     }
 
-
     private void searchForMp3(File directory) {
         if (!directory.isDirectory() || directory.listFiles() == null) return;
         List<File> output = new ArrayList<>();
@@ -246,6 +269,31 @@ public class Controller {
         parse(output);
     }
 
+    public void deleteClick() {
+        if (selected == null) return;
+        if (currentTrack != null) {
+            currentTrack.getTrack().stop();
+            pauseButton.setVisible(false);
+            playButton.setVisible(true);
+            pauseButton.requestFocus();
+        }
+        for (int i = 0; i < views.size(); i++) {
+            for (int j = 0; j < selected.size(); j++) {
+                if (views.get(i) == selected.get(j)) {
+                    viewContainer.getChildren().remove(selected.get(j).getView());
+
+                    for (int k = i + 1; k < views.size(); k++) {
+                        views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                    }
+                    views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+                    views.remove(i);
+                }
+            }
+        }
+        currentPlayList.clear();
+        selected.clear();
+        disposeCurrent();
+    }
 
     @SuppressWarnings("ConstantConditions")
     public void browseFolderClick() {
@@ -256,7 +304,6 @@ public class Controller {
         if (selected == null || selected.listFiles() == null) return;
 
         searchForMp3(selected);
-
     }
 
     public void parse(List<File> files) {
@@ -266,13 +313,14 @@ public class Controller {
         }
     }
 
-
     public void aboutClick() {
         Alert kek = new Alert(Alert.AlertType.INFORMATION);
+        kek.setTitle("NANI?");
         kek.setHeaderText("Authors:");
-        kek.setContentText("Макс Keeper Максутов \n Илья Jesper Красов");
+        kek.setContentText("Макс Keeper Максутов \nИлья Jesper Красов");
         kek.show();
     }
+
     public void browseClick() {
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
@@ -330,6 +378,7 @@ public class Controller {
     private void play (int index) {
         songSlider.setDisable(false);
         currentTrack = currentPlayList.get(index);
+        currentTrack.getTrack().getPlayer().seek(Duration.seconds(0));
         currentTrack.getTrack().getPlayer().play();
         currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         currentTrack.getTrack().getPlayer().setOnEndOfMedia(() -> {
@@ -349,9 +398,7 @@ public class Controller {
 
         songBarSliderSync = observable ->
         {
-
             songBar.setProgress(songSlider.getValue() / songSlider.getMax());
-
         };
         songSlider.valueProperty().addListener(songBarSliderSync);
 
@@ -370,20 +417,27 @@ public class Controller {
         volumeSliderInvalidationListener = observable -> currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
     }
+
     private void playClick() {
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {
-            currentPlayList.clear();
             if (currentTrack != null) currentTrack.getTrack().stop();
+            currentPlayList.clear();
             currentPlayList = (List<TrackView>) selected.clone();
         }
-
 
         play(0);
 
         pauseButton.setVisible(true);
         pauseButton.requestFocus();
         playButton.setVisible(false);
+    }
+
+    public void pauseClick() {
+        playButton.setVisible(true);
+        pauseButton.setVisible(false);
+        playButton.requestFocus();
+        currentTrack.getTrack().pause();
     }
 
     public void disposeCurrent() {
@@ -395,22 +449,12 @@ public class Controller {
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
         if (currentTrack != null) currentTrack.getTrack().getPlayer().setOnEndOfMedia(null);
         if (currentTrack != null) songSlider.valueProperty().removeListener(songBarSliderSync);
-
     }
-
 
     private String timeFormat(Duration duration) {
         int minutes = (int) duration.toMinutes();
         int seconds = (int) duration.toSeconds() - minutes * 60;
         if (seconds < 10) return Integer.toString(minutes).concat(":0").concat(Integer.toString(seconds));
         else return Integer.toString(minutes).concat(":").concat(Integer.toString(seconds));
-
-    }
-
-    public void pauseClick() {
-        playButton.setVisible(true);
-        pauseButton.setVisible(false);
-        playButton.requestFocus();
-        currentTrack.getTrack().pause();
     }
 }
