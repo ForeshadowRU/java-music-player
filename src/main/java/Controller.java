@@ -13,6 +13,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -74,12 +75,40 @@ public class Controller {
         else
             view.getView().setLayoutY(views.size() * VIEW_HEIGHT + views.size() * UNSELECTED_Y + UNSELECTED_Y);
 
+        // TODO:
+        // add more MenuItem and write for them function
 
-        ContextMenu menu = new ContextMenu();
-        MenuItem deleteItem = new MenuItem();
-        deleteItem.setText("Delete");
-        deleteItem.setOnAction(event -> viewContainer.getChildren().remove(view.getView()));
-        menu.getItems().add(deleteItem);
+        final ContextMenu contextMenu = new ContextMenu();
+        MenuItem delete = new MenuItem("Delete");
+        
+        delete.setOnAction(e -> {
+            viewContainer.getChildren().remove(view.getView());
+            int index = views.indexOf(view);
+            if (selected.contains(view)) {
+                if (currentTrack.equals(view)) {
+                    currentTrack.getTrack().stop();
+                    pauseButton.setVisible(false);
+                    playButton.setVisible(true);
+                    pauseButton.requestFocus();
+                    disposeCurrent();
+                }
+                for (int k = index + 1; k < views.size(); k++) {
+                    views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                }
+                views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+
+                currentPlayList.remove(index);
+                selected.remove(index);
+            } else {
+                for (int k = index + 1; k < views.size(); k++) {
+                    views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                }
+                views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+            }
+            views.remove(index);
+        });
+        contextMenu.getItems().addAll(delete);
+        view.getView().setOnContextMenuRequested(event -> contextMenu.show(view.getView(), event.getScreenX(), event.getScreenY()));
 
         /**TODO: Write selection logic here.
          * Single Click: select only clicked. +
@@ -115,9 +144,7 @@ public class Controller {
                         }
                     }
                 }
-            } /*else if (event.getButton() == MouseButton.SECONDARY && event.getButton() != MouseButton.MIDDLE) {
-
-            }*/
+            }
         });
 
         ImageView image = new ImageView();
