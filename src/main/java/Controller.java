@@ -83,7 +83,6 @@ public class Controller {
         
         delete.setOnAction(e -> {
             viewContainer.getChildren().remove(view.getView());
-            int index = views.indexOf(view);
             if (selected.contains(view)) {
                 if (currentTrack.equals(view)) {
                     currentTrack.getTrack().stop();
@@ -92,20 +91,20 @@ public class Controller {
                     pauseButton.requestFocus();
                     disposeCurrent();
                 }
-                for (int k = index + 1; k < views.size(); k++) {
+                for (int k = views.indexOf(view) + 1; k < views.size(); k++) {
                     views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
                 }
                 views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
 
-                currentPlayList.remove(index);
-                selected.remove(index);
+                currentPlayList.remove(view);
+                selected.remove(view);
             } else {
-                for (int k = index + 1; k < views.size(); k++) {
+                for (int k = views.indexOf(view) + 1; k < views.size(); k++) {
                     views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
                 }
                 views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
             }
-            views.remove(index);
+            views.remove(view);
         });
         contextMenu.getItems().addAll(delete);
         view.getView().setOnContextMenuRequested(event -> contextMenu.show(view.getView(), event.getScreenX(), event.getScreenY()));
