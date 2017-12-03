@@ -251,23 +251,16 @@ public class Controller {
             playButton.setVisible(true);
             pauseButton.requestFocus();
         }
-
         for (int i = 0; i < views.size(); i++) {
             for (int j = 0; j < selected.size(); j++) {
                 if (views.get(i) == selected.get(j)) {
                     viewContainer.getChildren().remove(selected.get(j).getView());
-                    if (i == views.size() - 1) {
-                        views.get(views.size() - 1).getView().setLayoutY((views.size() - 3) * VIEW_HEIGHT + (views.size() - 2) * UNSELECTED_Y);
-                    } else if (i == 0) {
-                        for (int k = 1; k < views.size(); k++) {
-                            views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
-                        }
-                    } else {
-                        for (int k = i + 1; k < views.size(); k++) {
-                            views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
-                        }
-                        views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+
+                    for (int k = i + 1; k < views.size(); k++) {
+                        views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
                     }
+                    views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+                    views.remove(i);
                 }
             }
         }
@@ -285,7 +278,6 @@ public class Controller {
         if (selected == null || selected.listFiles() == null) return;
 
         searchForMp3(selected);
-
     }
 
     public void parse(List<File> files) {
@@ -380,9 +372,7 @@ public class Controller {
 
         songBarSliderSync = observable ->
         {
-
             songBar.setProgress(songSlider.getValue() / songSlider.getMax());
-
         };
         songSlider.valueProperty().addListener(songBarSliderSync);
 
