@@ -84,7 +84,7 @@ public class Controller {
         delete.setOnAction(e -> {
             viewContainer.getChildren().remove(view.getView());
             if (selected.contains(view)) {
-                if (currentTrack.equals(view)) {
+                if (currentTrack != null && currentTrack.equals(view)) {
                     currentTrack.getTrack().stop();
                     pauseButton.setVisible(false);
                     playButton.setVisible(true);
@@ -277,10 +277,19 @@ public class Controller {
             playButton.setVisible(true);
             pauseButton.requestFocus();
         }
+
+        ArrayList<TrackView> sortedSelect = new ArrayList<>();
+        for (TrackView view : views) {
+            for (TrackView select : selected) {
+                if (view.equals(select)) {
+                    sortedSelect.add(select);
+                }
+            }
+        }
         for (int i = 0; i < views.size(); i++) {
-            for (int j = 0; j < selected.size(); j++) {
-                if (views.get(i) == selected.get(j)) {
-                    viewContainer.getChildren().remove(selected.get(j).getView());
+            for (int j = 0; j < sortedSelect.size(); j++) {
+                if (views.get(i).equals(sortedSelect.get(j))) {
+                    viewContainer.getChildren().remove(sortedSelect.get(j).getView());
 
                     for (int k = i + 1; k < views.size(); k++) {
                         views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
@@ -290,6 +299,21 @@ public class Controller {
                 }
             }
         }
+
+        /*for (TrackView view : views) {
+            for (TrackView select : sortedSelect) {
+                if (view.equals(select)) {
+                    viewContainer.getChildren().remove(select.getView());
+
+                    for (int k = views.indexOf(view) + 1; k < views.size(); k++) {
+                        views.get(k).getView().setLayoutY((k - 1) * VIEW_HEIGHT + (k) * UNSELECTED_Y);
+                    }
+                    views.get(views.size() - 1).getView().setLayoutY((views.size() - 2) * VIEW_HEIGHT + (views.size() - 1) * UNSELECTED_Y);
+                    views.remove(view);
+                }
+            }
+        }*/
+        sortedSelect.clear();
         currentPlayList.clear();
         selected.clear();
         disposeCurrent();
