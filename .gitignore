@@ -1,8 +1,9 @@
-**/*.iml
-*.xml
-*.iws
+#**/*.iml
+#*.xml
+#*.iws
 
-/target
-/out
+target/
+out/
 .idea
 .idea/
+**/*.iml
