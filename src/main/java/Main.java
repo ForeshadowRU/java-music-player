@@ -24,8 +24,6 @@ public class Main extends Application{
         stage.setTitle("JPlayer");
         stage.getIcons().add(new Image("/img/controlPanel/window.ico"));
         stage.getIcons().add(new Image("/img/controlPanel/window.png"));
-
         stage.show();
     }
-
 }
