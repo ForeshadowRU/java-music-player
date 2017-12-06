@@ -7,7 +7,7 @@
 <?import java.net.URL?>
 <AnchorPane id="musicControls" fx:id="pane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
     <stylesheets>
-        <URL value="@style.css" />
+        <URL value="@../css/style.css" />
     </stylesheets>
     <Pane fx:id="viewContainer" id="libView" layoutY="40" layoutX="15" prefWidth="570" prefHeight="400">
 
@@ -38,24 +38,24 @@
 
     <ImageView id="volumeControl" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="420" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
 
-        <Image url="@img/volumeControl/speaker-low.png" />
+        <Image url="@../img/volumeControl/speaker-low.png" />
     </ImageView>
 
       <ImageView id="playBtn" fx:id="playButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="106.0" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
 
-          <Image url="@img/controlPanel/play.png" />
+          <Image url="@../img/controlPanel/play.png" />
       </ImageView>
     <ImageView id="pauseBtn" fx:id="pauseButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="106.0" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
 
-        <Image url="@img/controlPanel/pause.png" />
+        <Image url="@../img/controlPanel/pause.png" />
     </ImageView>
       <ImageView id="forwardBtn" fx:id="forwardButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="168" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
 
-          <Image url="@img/controlPanel/forward.png" />
+          <Image url="@../img/controlPanel/forward.png" />
       </ImageView>
       <ImageView id="backwardBtn" fx:id="backwardButton" fitHeight="48.0" fitWidth="48.0" focusTraversable="true" layoutX="40" layoutY="528.0" pickOnBounds="true" preserveRatio="true">
 
-          <Image url="@img/controlPanel/backward.png" />
+          <Image url="@../img/controlPanel/backward.png" />
       </ImageView>
 
       <Label fx:id="timeElapsed" layoutX="16.0" layoutY="471.0" text="0:00" />

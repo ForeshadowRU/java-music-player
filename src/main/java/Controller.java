@@ -1,7 +1,5 @@
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -70,6 +68,63 @@ public class Controller {
     private double UNSELECTED_X = 50;
     private double SELECTED_X = 20;
 
+    private ChangeListener<Duration> sliderValueUpdater;
+    private InvalidationListener songSliderInvalidationListener;
+    private InvalidationListener volumeSliderInvalidationListener;
+    private InvalidationListener songBarSliderSync;
+
+    @FXML
+    protected void initialize() {
+        currentPlayList = new ArrayList<>();
+        views = new ArrayList<>();
+        selected = new ArrayList<>();
+
+        pauseButton.setVisible(false);
+        pauseButton.setOnMouseClicked(event -> pauseClick());
+        playButton.setOnMouseClicked(event -> playClick());
+        forwardButton.setOnMouseClicked(event -> forwardClick());
+        backwardButton.setOnMouseClicked((event -> backwardClick()));
+
+        pane.setOnKeyPressed(event ->
+        {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                clearSelected();
+            }
+        });
+
+        currentPlayList = new ArrayList<>();
+
+        songSlider.setMin(0);
+        songSlider.setBlockIncrement(1);
+        songSlider.setMax(100);
+        songSlider.setValue(0);
+        songBar.setProgress(0);
+        songSlider.setDisable(true);
+
+        settingsItem.graphicProperty().set(new ImageView(new Image("img/menu/settings.png")));
+        settingsItem.setOnAction(event -> {
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("fxml/settings.fxml"));
+                Stage stage = new Stage();
+                stage.setTitle("Settings");
+                stage.setScene(new Scene(root, 450, 450));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        });
+
+        volumeSlider.setMin(0);
+        volumeSlider.setMax(100);
+        volumeSlider.setValue(30);
+        volumeBar.setProgress(0.3);
+        volumeSlider.setBlockIncrement(1);
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
+
+    }
+
     private void addView(Track track) {
         TrackView view = new TrackView(track);
         view.getView().setPrefSize(VIEW_WIDTH, VIEW_HEIGHT);
@@ -87,17 +142,6 @@ public class Controller {
         deleteItem.setOnAction(event -> viewContainer.getChildren().remove(view.getView()));
         menu.getItems().add(deleteItem);
 
-        /**TODO: Write selection logic here.
-         * Single Click: select only clicked. +
-         * Double Click: play only clicked; +
-         * Single Click on Selected: do nothing;
-         * Single Click with Shift Pressed: add clicked to selection;
-         * Single Click with Shift Pressed on Selected: remove clicked from selection;
-         * Double Click with Shift selected: play all selected;
-         *
-         * select : move pane to SELECTED_X offset, and change it's id to "selectedNode";
-         *
-         */
 
         view.getView().setOnMousePressed(event -> {
             if ((event.getClickCount() >= 2) && (event.getButton() == MouseButton.PRIMARY)) {
@@ -207,7 +251,6 @@ public class Controller {
         currentPlayList.clear();
         selected.clear();
     }
-    private InvalidationListener songBarSliderSync;
 
     private void forwardClick() {
         if (currentTrack != null) {
@@ -239,7 +282,6 @@ public class Controller {
         // TODO implement repeat mechanism
     }
 
-
     private void searchForMp3(File directory) {
         if (!directory.isDirectory() || directory.listFiles() == null) return;
         List<File> output = new ArrayList<>();
@@ -255,7 +297,6 @@ public class Controller {
         parse(output);
     }
 
-
     @SuppressWarnings("ConstantConditions")
     public void browseFolderClick() {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -268,13 +309,12 @@ public class Controller {
 
     }
 
-    public void parse(List<File> files) {
+    private void parse(List<File> files) {
         for (File selectedFile : files) {
             Track selectedTrack = new Track(selectedFile);
             addView(selectedTrack);
         }
     }
-
 
     public void aboutClick() {
         Alert kek = new Alert(Alert.AlertType.INFORMATION);
@@ -282,6 +322,7 @@ public class Controller {
         kek.setContentText("Макс Keeper Максутов \n Илья Jesper Красов");
         kek.show();
     }
+
     public void browseClick() {
         FileChooser browser = new FileChooser();
         browser.setTitle("Select file...");
@@ -295,62 +336,6 @@ public class Controller {
         parse(selected);
     }
 
-    private ChangeListener<Duration> sliderValueUpdater;
-    private InvalidationListener songSliderInvalidationListener;
-    private InvalidationListener volumeSliderInvalidationListener;
-
-
-    @FXML
-    protected void initialize() {
-        currentPlayList = new ArrayList<>();
-        views = new ArrayList<>();
-        selected = new ArrayList<>();
-
-        pauseButton.setVisible(false);
-        pauseButton.setOnMouseClicked(event -> pauseClick());
-        playButton.setOnMouseClicked(event -> playClick());
-        forwardButton.setOnMouseClicked(event -> forwardClick());
-        backwardButton.setOnMouseClicked((event -> backwardClick()));
-
-        pane.setOnKeyPressed(event ->
-        {
-            if (event.getCode() == KeyCode.ESCAPE) {
-                clearSelected();
-            }
-        });
-
-        currentPlayList = new ArrayList<>();
-
-        songSlider.setMin(0);
-        songSlider.setBlockIncrement(1);
-        songSlider.setMax(100);
-        songSlider.setValue(0);
-        songBar.setProgress(0);
-        songSlider.setDisable(true);
-
-        settingsItem.graphicProperty().set(new ImageView(new Image("img/menu/settings.png")));
-        settingsItem.setOnAction(event -> {
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("settings.fxml"));
-                Stage stage = new Stage();
-                stage.setTitle("Settings");
-                stage.setScene(new Scene(root, 450, 450));
-                stage.show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-        });
-
-        volumeSlider.setMin(0);
-        volumeSlider.setMax(100);
-        volumeSlider.setValue(30);
-        volumeBar.setProgress(0.3);
-        volumeSlider.setBlockIncrement(1);
-        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> volumeBar.setProgress(volumeSlider.getValue() / 100));
-
-    }
     private void play (int index) {
         songSlider.setDisable(false);
         currentTrack = currentPlayList.get(index);
@@ -394,6 +379,7 @@ public class Controller {
         volumeSliderInvalidationListener = observable -> currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
     }
+
     private void playClick() {
         if (selected.size() == 0) return;
         if (!selected.equals(currentPlayList)) {

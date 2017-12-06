@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+
+<?import java.net.URL?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<SplitPane id="musicControls" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="SettingsController">
+    <stylesheets>
+        <URL value="@../css/settings-style.css" />
+    </stylesheets>
+
+
+    <VBox prefHeight="600" prefWidth="100" id="menu" minWidth="100">
+        <Label text="General" id="menuLabel" prefWidth="100" alignment="CENTER"/>
+        <Label text="Color" id="menuLabel" prefWidth="100" alignment="CENTER"/>
+
+    </VBox>
+    <HBox>
+        <Label text="TEXT PROPERTY 1" id="menuLabel" prefWidth="100" alignment="CENTER"/>
+        <Label text="TEXT PROPERTY 1" id="menuLabel" prefWidth="100" alignment="CENTER"/>
+    </HBox>
+</SplitPane>
