@@ -1,8 +1,4 @@
 #menuLabel{
-    -fx-border-color: aqua;
-    -fx-border-width: 1px;
-    -fx-border-style: solid;
-    -fx-border-radius: 3px;
     -fx-padding: 5px;
     -fx-border-insets: 5px;
     -fx-background-insets: 5px;
@@ -13,4 +9,10 @@
     -fx-border-width: 1px;
     -fx-border-style: solid;
     -fx-border-radius: 0.1px;
+}
+#selection{
+    -fx-background-color: #D3D3D3;
+}
+.split-pane > .split-pane-divider {
+    -fx-padding: 0 0.01em 0 0.01 em;
 }

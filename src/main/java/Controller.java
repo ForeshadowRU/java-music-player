@@ -85,8 +85,7 @@ public class Controller {
         forwardButton.setOnMouseClicked(event -> forwardClick());
         backwardButton.setOnMouseClicked((event -> backwardClick()));
 
-        pane.setOnKeyPressed(event ->
-        {
+        pane.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 clearSelected();
             }
@@ -108,6 +107,7 @@ public class Controller {
                 Stage stage = new Stage();
                 stage.setTitle("Settings");
                 stage.setScene(new Scene(root, 450, 450));
+                stage.getIcons().add(new Image("img/menu/settings.png"));
                 stage.show();
             } catch (IOException e) {
                 e.printStackTrace();
