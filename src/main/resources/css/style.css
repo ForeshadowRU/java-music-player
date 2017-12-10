@@ -1,34 +1,34 @@
 #pauseButton
 {
-    -fx-image: url("img/controlPanel/pause.png");
+    -fx-image: url("../img/controlPanel/pause.png");
 }
 #pauseButton:hover
 {
-    -fx-image: url("img/controlPanel/pause-selected.png");
+    -fx-image: url("../img/controlPanel/pause-selected.png");
 }
 #playBtn
 {
-    -fx-image: url("img/controlPanel/play.png");
+    -fx-image: url("../img/controlPanel/play.png");
 }
 #playBtn:hover
 {
-    -fx-image: url("img/controlPanel/play-selected.png");
+    -fx-image: url("../img/controlPanel/play-selected.png");
 }
 #forwardBtn
 {
-    -fx-image: url("img/controlPanel/forward.png");
+    -fx-image: url("../img/controlPanel/forward.png");
 }
 #forwardBtn:hover
 {
-    -fx-image: url("img/controlPanel/forward-selected.png");
+    -fx-image: url("../img/controlPanel/forward-selected.png");
 }
 #backwardBtn
 {
-    -fx-image: url("img/controlPanel/backward.png");
+    -fx-image: url("../img/controlPanel/backward.png");
 }
 #backwardBtn:hover
 {
-    -fx-image: url("img/controlPanel/backward-selected.png");
+    -fx-image: url("../img/controlPanel/backward-selected.png");
 }
 #musicControls
 {
