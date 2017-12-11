@@ -13,6 +13,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -396,23 +397,14 @@ public class Controller {
         currentTrack = currentPlayList.get(index);
         currentTrack.getTrack().getPlayer().play();
         currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
-        currentTrack.getTrack().getPlayer().setOnEndOfMedia(() -> {
-            if (index + 1 < currentPlayList.size()) {
-                play(index + 1);
-            } else {
-                currentTrack.getTrack().getPlayer().stop();
-                pauseButton.setVisible(false);
-                playButton.setVisible(true);
-            }
-            disposeCurrent();
-        });
+        songBar.setProgress(0);
+        songSlider.setValue(0);
         songSlider.setMin(0);
         songSlider.setMax((int) currentTrack.getTrack().getPlayer().getMedia().getDuration().toSeconds());
 
         songSlider.setBlockIncrement(1);
 
-        songBarSliderSync = observable ->
-        {
+        songBarSliderSync = observable -> {
             songBar.setProgress(songSlider.getValue() / songSlider.getMax());
         };
         songSlider.valueProperty().addListener(songBarSliderSync);
@@ -423,14 +415,28 @@ public class Controller {
         currentTrack.getTrack().getPlayer().currentTimeProperty().addListener(sliderValueUpdater);
 
         songSliderInvalidationListener = observable -> {
-            if (songSlider.isValueChanging()) {
+            if (songSlider.isValueChanging() || songSlider.isPressed()) {
                 currentTrack.getTrack().getPlayer().seek(Duration.seconds((int) (songSlider.getValue())));
             }
         };
         songSlider.valueProperty().addListener(songSliderInvalidationListener);
 
-        volumeSliderInvalidationListener = observable -> currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
+        volumeSliderInvalidationListener = observable -> {
+            currentTrack.getTrack().getPlayer().setVolume(volumeSlider.getValue() / 100);
+        };
         volumeSlider.valueProperty().addListener(volumeSliderInvalidationListener);
+
+        currentTrack.getTrack().getPlayer().setOnEndOfMedia(() -> {
+            if (index + 1 < currentPlayList.size()) {
+                play(index + 1);
+            } else {
+                currentTrack.getTrack().getPlayer().stop();
+                pauseButton.setVisible(false);
+                playButton.setVisible(true);
+                playButton.requestFocus();
+            }
+            disposeCurrent();
+        });
     }
 
     private void playClick() {
@@ -439,6 +445,8 @@ public class Controller {
             if (currentTrack != null) currentTrack.getTrack().stop();
             currentPlayList.clear();
             currentPlayList = (List<TrackView>) selected.clone();
+        } else {
+            currentTrack.getTrack().play();
         }
 
         play(0);
@@ -450,8 +458,8 @@ public class Controller {
 
     public void pauseClick() {
         playButton.setVisible(true);
-        pauseButton.setVisible(false);
         playButton.requestFocus();
+        pauseButton.setVisible(false);
         currentTrack.getTrack().pause();
     }
 
@@ -462,8 +470,10 @@ public class Controller {
             songSlider.valueProperty().removeListener(songSliderInvalidationListener);
         if (currentTrack != null && volumeSliderInvalidationListener != null)
             volumeSlider.valueProperty().removeListener(volumeSliderInvalidationListener);
-        if (currentTrack != null) currentTrack.getTrack().getPlayer().setOnEndOfMedia(null);
-        if (currentTrack != null) songSlider.valueProperty().removeListener(songBarSliderSync);
+        if (currentTrack != null) {
+            currentTrack.getTrack().getPlayer().setOnEndOfMedia(null);
+            songSlider.valueProperty().removeListener(songBarSliderSync);
+        }
     }
 
     private String timeFormat(Duration duration) {
